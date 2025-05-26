@@ -30,7 +30,6 @@ function Navbar() {
 
   return (
     <Box>
-      {/* Promo Banner */}
       {bannerVisible && (
         <Typography
           variant="body2"
