@@ -27,9 +27,9 @@ function Home() {
                     backgroundRepeat: 'no-repeat',
                     position: 'relative',
                     display: 'flex',
-                    justifyContent:"space-between",
+                    justifyContent: "space-between",
                     flexDirection: { xs: "column", md: 'column', lg: 'column' },
-                   
+
                 }}
             >
                 <Box
@@ -161,7 +161,7 @@ function Home() {
                                 xs: "auto",
                                 lg: "45%"
                             },
-                            display: { xs: 'block', sm:"none", md: 'none', lg: "block" },
+                            display: { xs: 'block', sm: "none", md: 'none', lg: "block" },
                         }}
                     />
                     <Box
@@ -172,7 +172,7 @@ function Home() {
                             position: "absolute",
                             top: { xs: "50%", lg: "15%" },
                             right: "5%",
-                            display: { xs: 'block',sm:"none", md: 'none', lg: "block" },
+                            display: { xs: 'block', sm: "none", md: 'none', lg: "block" },
                         }}
                     />
                 </Box>
@@ -184,7 +184,7 @@ function Home() {
                     sx={{
                         width: { xs: "100%" },
                         objectFit: 'cover',
-                        display: { xs: 'block',sm:"none", md: 'none', lg: 'none' },
+                        display: { xs: 'block', sm: "none", md: 'none', lg: 'none' },
                     }}
                 />
                 <Box backgroundColor="black" height={120} gap={3} display={"flex"} width={"100%"} flexWrap={"wrap"} alignItems={"center"} justifyContent={"space-evenly"}>
