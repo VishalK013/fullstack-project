@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
-import HomePage from './Pages/HomePage'
+import HomePage from "./Pages/HomePage"
 import Navbar from './components/Navbar'
 import { ThemeProvider } from "@emotion/react"
 import { CssBaseline } from "@mui/material"
