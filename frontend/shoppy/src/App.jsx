@@ -4,6 +4,8 @@ import Navbar from './components/Navbar'
 import { ThemeProvider } from "@emotion/react"
 import { CssBaseline } from "@mui/material"
 import theme from "./Theme"
+import SignUpPage from "./Pages/SignUpPage"
+import LoginPage from "./Pages/LoginPage"
 function App() {
 
   return (
@@ -14,6 +16,8 @@ function App() {
           <Navbar />
           <Routes>
             <Route path='/' element={<HomePage />}></Route>
+            <Route path="/signup" element={<SignUpPage />}></Route>
+            <Route path="/login" element={<LoginPage/>}></Route>
           </Routes>
         </Router>
       </ThemeProvider>
