@@ -20,10 +20,15 @@ import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import CloseIcon from '@mui/icons-material/Close';
 import { Link } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { logOutUser } from '../features/user/UserSlice'; 
 
 function Navbar() {
   const [bannerVisible, setBannerVisible] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.user.user);
 
   const toggleDrawer = (open) => () => {
     setDrawerOpen(open);
@@ -31,7 +36,6 @@ function Navbar() {
 
   return (
     <Box>
-      {/* Promo Banner */}
       {bannerVisible && (
         <Typography
           variant="body2"
@@ -76,7 +80,7 @@ function Navbar() {
             </Typography>
           </Box>
 
-          <Box sx={{ display: { xs:"none", md: 'none', lg: 'flex' }, gap: 3 }}>
+          <Box sx={{ display: { xs: "none", md: 'none', lg: 'flex' }, gap: 3 }}>
             <Button color="inherit" sx={{ fontWeight: 700, textTransform: 'none' }}>
               Shop
             </Button>
@@ -100,7 +104,7 @@ function Navbar() {
                 px: 1,
                 py: 0.5,
                 borderRadius: 10,
-                width: { xs: 100, sm: 150, md: 300,lg:500 },
+                width: { xs: 100, sm: 150, md: 300, lg: 500 },
                 backgroundColor: '#F2F0F1',
               }}
               elevation={0}
@@ -115,9 +119,32 @@ function Navbar() {
             <IconButton>
               <ShoppingCartOutlinedIcon />
             </IconButton>
-            <IconButton component={Link} to="/signup">
-              <AccountCircleIcon />
-            </IconButton>
+
+            {user ? (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography sx={{ fontWeight: 600, fontSize: 14 }}>
+                  Welcome, {user.username}
+                </Typography>
+                <Button
+                  onClick={() => dispatch(logOutUser())}
+                  variant="text"
+                  size="small"
+                  sx={{
+                    textTransform: 'none',
+                    color: 'red',
+                    fontWeight: 'bold',
+                    fontSize: 12,
+                    ml: 1,
+                  }}
+                >
+                  Logout
+                </Button>
+              </Box>
+            ) : (
+              <IconButton component={Link} to="/signup">
+                <AccountCircleIcon />
+              </IconButton>
+            )}
           </Box>
         </Toolbar>
       </AppBar>
