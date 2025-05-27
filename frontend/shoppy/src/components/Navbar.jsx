@@ -19,6 +19,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import CloseIcon from '@mui/icons-material/Close';
+import { Link } from 'react-router-dom';
 
 function Navbar() {
   const [bannerVisible, setBannerVisible] = useState(true);
@@ -114,7 +115,7 @@ function Navbar() {
             <IconButton>
               <ShoppingCartOutlinedIcon />
             </IconButton>
-            <IconButton>
+            <IconButton component={Link} to="/signup">
               <AccountCircleIcon />
             </IconButton>
           </Box>
