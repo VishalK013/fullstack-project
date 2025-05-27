@@ -1,11 +1,11 @@
 const User = require("../model/userModel")
-const bcrypte = require("bcrypt")
+const bcrypt = require("bcrypt")
 
 exports.registerUser = async (req, res) => {
     const { username, email, password } = req.body;
 
     if (!username || !email || !password) {
-        return res.status(400).json({ error: "All fields are required!" }); // Use .status
+        return res.status(400).json({ error: "All fields are required!" });
     }
 
     try {
@@ -15,7 +15,7 @@ exports.registerUser = async (req, res) => {
             return res.status(409).json({ error: "Email already registered!" });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10); // typo fixed here too
+        const hashedPassword = await bcrypt.hash(password, 10); 
 
         const newUser = new User({ username, email, password: hashedPassword });
         await newUser.save();
