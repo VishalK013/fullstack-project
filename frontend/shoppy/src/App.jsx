@@ -13,7 +13,7 @@ import UnauthorizedPage from './Pages/UnauthorizedPage';
 
 const AppRoutes = () => {
   const location = useLocation();
-  const hideNavbar = ["/login", "/signup"].includes(location.pathname);
+  const hideNavbar = ["/login", "/signup","/admin"].includes(location.pathname);
 
   return (
     <>
