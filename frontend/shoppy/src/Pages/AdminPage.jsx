@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Products from "./Product"
 import {
   Box, Paper, Typography, Grid, CircularProgress, Button,
   Drawer, List, ListItem, ListItemIcon, ListItemText,
@@ -22,7 +23,10 @@ function AdminPage() {
     totalUsers: 0,
   });
   const [loading, setLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState("Dashboard");
+  const [activeSection, setActiveSection] = useState(() => {
+    return localStorage.getItem("adminActiveSection") || "Dashboard";
+  });
+
   const dispatch = useDispatch();
 
   const handleLogout = () => {
@@ -86,7 +90,7 @@ function AdminPage() {
       case "Orders":
         return <Typography variant="h5">Orders section coming soon...</Typography>;
       case "Products":
-        return <Typography variant="h5">Manage your products here.</Typography>;
+        return <Products />;
       case "Users":
         return <Typography variant="h5">User list and actions will be here.</Typography>;
       default:
@@ -133,8 +137,12 @@ function AdminPage() {
                 button
                 key={text}
                 selected={activeSection === text}
-                onClick={() => setActiveSection(text)}
-                sx={{cursor:"pointer"}}
+                onClick={() => {
+                  setActiveSection(text);
+                  localStorage.setItem("adminActiveSection", text);
+                }}
+
+                sx={{ cursor: "pointer" }}
               >
                 <ListItemIcon>
                   {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
