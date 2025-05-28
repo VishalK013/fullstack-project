@@ -1,11 +1,15 @@
-const User = require("../model/userModel")
-const bcrypt = require("bcrypt")
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const User = require("../model/userModel");
+
+const JWT_SECRET = process.env.JWT_SECRET || "Viking001";
+
 
 exports.registerUser = async (req, res) => {
-    const { username, email, password } = req.body;
+    const { username, email, password, role } = req.body;
 
     if (!username || !email || !password) {
-        return res.status(400).json({ error: "All fields are required!" }); g
+        return res.status(400).json({ error: "All fields are required!" });
     }
 
     try {
@@ -15,31 +19,73 @@ exports.registerUser = async (req, res) => {
             return res.status(409).json({ error: "Email already registered!" });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10); 
+        const hashedPassword = await bcrypt.hash(password, 10);
 
-        const newUser = new User({ username, email, password: hashedPassword });
-        await newUser.save();
+        const newUser = new User({ username, email, password: hashedPassword, role });
+        await newUser.save();//Save data in databse!
 
         return res.status(201).json({
             user: {
                 id: newUser._id,
                 username: newUser.username,
-                email: newUser.email
+                email: newUser.email,
             },
             message: "User registered successfully"
         });
 
     } catch (error) {
+        console.error("Register error:", error);
         return res.status(500).json({ error: "Server error", details: error.message });
     }
 };
 
-
 exports.getAllUsers = async (req, res) => {
     try {
-        const users = await User.find().select('-password');
-        res.json(users);
+        const users = await User.find().select("-password");
+        res.status(200).json(users);
     } catch (err) {
-        res.status(500).json({ error: 'Server error', details: err.message });
+        console.error("Fetch users error:", err);
+        res.status(500).json({ error: "Server error", details: err.message });
+    }
+};
+
+exports.loginUser = async (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ error: "Email and Password are required" });
+    }
+
+    try {
+        const user = await User.findOne({ email });// we are using email to find the user cause it's unique
+
+        if (!user) {
+            return res.status(401).json({ error: "Invalid email or password" });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);//M athcing password
+
+        if (!isMatch) {
+            return res.status(401).json({ error: "Invalid email or password" });
+        }
+
+        const token = jwt.sign(
+            { id: user._id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: "1h" }
+        );
+
+        return res.status(200).json({
+            user: {
+                id: user._id,
+                username: user.username,
+                email: user.email,
+                role: user.role
+            },
+            token,
+            message: "Login Successful"
+        });
+
+    } catch (error) {
+        console.error("Login error:", error);
+        return res.status(500).json({ error: "Server error", details: error.message });
     }
 };
