@@ -33,12 +33,13 @@ function SignUpPage() {
         username: "",
         email: "",
         password: "",
+        role: "user"
     });
 
     const [errors, setErrors] = useState({});
 
     const dispatch = useDispatch();
-    const { success, error } = useSelector((state) => state.user);
+    const { loading,success, error } = useSelector((state) => state.user);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -92,6 +93,7 @@ function SignUpPage() {
             username: "",
             email: "",
             password: "",
+            role: "user"
         });
     };
 
@@ -235,12 +237,10 @@ function SignUpPage() {
                     variant="contained"
                     size="large"
                     type="submit"
-                    sx={{
-                        width: 200,
-                        fontSize: 15,
-                    }}
+                    disabled={loading}
+                    sx={{ width: 200, fontSize: 15 }}
                 >
-                    Sign up
+                    {loading ? "Signing up..." : "Sign up"}
                 </Button>
             </Paper>
         </Box>

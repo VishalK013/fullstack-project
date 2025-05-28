@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
     Box,
     Button,
@@ -6,10 +6,6 @@ import {
     Paper,
     Typography,
     Link as MuiLink,
-    MenuItem,
-    Select,
-    FormControl,
-    InputLabel,
 } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import MailOutlineIcon from "@mui/icons-material/MailOutline";
@@ -18,14 +14,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { loginUser, clearStatus } from "../features/user/UserSlice";
 
 function LoginPage() {
-    const [formData, setFormData] = useState({
-        email: "",
-        password: "",
-        role: "user", // added role here
-    });
-
+    const [formData, setFormData] = useState({ email: "", password: "" });
     const [errors, setErrors] = useState({});
-
+    const lastEmailRef = useRef("");
     const dispatch = useDispatch();
     const { error, success, loading, user } = useSelector((state) => state.user);
     const navigate = useNavigate();
@@ -73,23 +64,13 @@ function LoginPage() {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!validateForm()) return;
-
+        lastEmailRef.current = formData.email;
         dispatch(loginUser(formData));
+        // setFormData({ email: "", password: "" });
     };
 
     return (
-        <Box
-            sx={{
-                height: "100%",
-                width: "100%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                bgcolor: "background.default",
-                px: 2,
-                pt: "10%",
-            }}
-        >
+        <Box sx={{ height: "100%", width: "100%", display: "flex", alignItems: "center", justifyContent: "center", bgcolor: "background.default", px: 2, pt: "10%" }}>
             <Paper
                 component="form"
                 onSubmit={handleSubmit}
@@ -106,24 +87,7 @@ function LoginPage() {
                     gap: 3,
                 }}
             >
-                <Typography variant="h3" fontWeight={900}>
-                    Shop.co
-                </Typography>
-
-                {/* Role Select */}
-                <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-                    <InputLabel id="role-label">Role</InputLabel>
-                    <Select
-                        labelId="role-label"
-                        label="Role"
-                        name="role"
-                        value={formData.role}
-                        onChange={handleChange}
-                    >
-                        <MenuItem value="user">User</MenuItem>
-                        <MenuItem value="admin">Admin</MenuItem>
-                    </Select>
-                </FormControl>
+                <Typography variant="h3" fontWeight={900}>Shop.co</Typography>
 
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, width: "100%" }}>
                     <MailOutlineIcon color="action" sx={{ fontSize: 27 }} />
