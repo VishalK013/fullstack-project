@@ -127,7 +127,7 @@ function SignUpPage() {
                 }}
             >
                 <Typography variant="h3" fontWeight={900}>
-                    Shop.co
+                    Sign up 
                 </Typography>
 
                 <Box sx={inputRow}>
