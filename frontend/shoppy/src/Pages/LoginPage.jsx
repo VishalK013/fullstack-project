@@ -87,7 +87,7 @@ function LoginPage() {
                     gap: 3,
                 }}
             >
-                <Typography variant="h3" fontWeight={900}>Shop.co</Typography>
+                <Typography variant="h3" fontWeight={900}>Sign in</Typography>
 
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, width: "100%" }}>
                     <MailOutlineIcon color="action" sx={{ fontSize: 27 }} />
