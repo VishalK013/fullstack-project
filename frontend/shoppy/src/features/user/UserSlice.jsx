@@ -7,22 +7,20 @@ const tokenFromStorage = localStorage.getItem("token");
 export const signupUser = createAsyncThunk(
     "user/signupUser",
     async (userdata, { rejectWithValue }) => {
-        try {
-            const response = await axios.post(
-                "http://localhost:5000/api/users/register",
-                userdata,
-                {
-                    headers: { "Content-Type": "application/json" },
-                }
-            );
 
+        try {
+
+            const response = await axios.post("http://192.168.2.223:5000/api/users/register", userdata);
             return response.data;
+
         } catch (err) {
+
             if (err.response && err.response.data && err.response.data.error) {
                 return rejectWithValue(err.response.data.error);
             } else {
                 return rejectWithValue("Network error");
             }
+
         }
     }
 );
@@ -30,23 +28,20 @@ export const signupUser = createAsyncThunk(
 export const loginUser = createAsyncThunk(
     "user/loginUser",
     async (userdata, { rejectWithValue }) => {
+
         try {
 
-            const response = await axios.post("http://localhost:5000/api/users/login", userdata,
-                {
-
-                    headers: { "Content-Type": "application/json" }
-
-                });
-
+            const response = await axios.post("http://192.168.2.223:5000/api/users/login", userdata);
             return response.data;
 
         } catch (err) {
+
             if (err.response && err.response.data && err.response.data.error) {
                 return rejectWithValue(err.response.data.error);
             } else {
                 return rejectWithValue("Network error");
             }
+
         }
     }
 )
@@ -72,7 +67,7 @@ const userSlice = createSlice({
             state.success = null;
 
             localStorage.removeItem("user");
-            localStorage.removeItem("token");   
+            localStorage.removeItem("token");
         }
     },
     extraReducers: (builder) => {

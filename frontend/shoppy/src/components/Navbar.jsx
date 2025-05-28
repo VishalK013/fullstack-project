@@ -19,15 +19,21 @@ import SearchIcon from '@mui/icons-material/Search';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import CloseIcon from '@mui/icons-material/Close';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { logOutUser } from '../features/user/UserSlice'; 
+import { logOutUser } from '../features/user/UserSlice';
 
 function Navbar() {
   const [bannerVisible, setBannerVisible] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    dispatch(logOutUser());
+    navigate("/");
+  };
   const user = useSelector((state) => state.user.user);
 
   const toggleDrawer = (open) => () => {
@@ -126,7 +132,7 @@ function Navbar() {
                   Welcome, {user.username}
                 </Typography>
                 <Button
-                  onClick={() => dispatch(logOutUser())}
+                  onClick={handleLogout}
                   variant="text"
                   size="small"
                   sx={{
@@ -141,10 +147,28 @@ function Navbar() {
                 </Button>
               </Box>
             ) : (
-              <IconButton component={Link} to="/signup">
-                <AccountCircleIcon />
-              </IconButton>
+              <Box sx={{ display: "flex", gap: 1 }}>
+                <Button
+                  component={Link}
+                  to="/signup"
+                  variant="outlined"
+                  size="small"
+                  sx={{ textTransform: 'none', width: "100px" }}
+                >
+                  Sign Up
+                </Button>
+                <Button
+                  component={Link}
+                  to="/login"
+                  variant="contained"
+                  size="small"
+                  sx={{ textTransform: 'none', width: "100px" }}
+                >
+                  Sign In
+                </Button>
+              </Box>
             )}
+
           </Box>
         </Toolbar>
       </AppBar>

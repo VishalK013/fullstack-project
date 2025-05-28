@@ -9,9 +9,11 @@ import zara from "../assets/Zara.png"
 import gucci from "../assets/Gucci.png"
 import prada from "../assets/Prada.png"
 import CK from "../assets/CK.png"
+import Navbar from '../components/Navbar';
 
 function Home() {
     return (
+
         <Box>
             <Box
                 sx={{

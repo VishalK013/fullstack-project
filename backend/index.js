@@ -1,9 +1,11 @@
 const express = require("express");
+const dotenv = require("dotenv").config()
 const bodyParser = require("body-parser");
 const { connectToMongo } = require("./config/connection");
-const userRoutes = require("./routes/userRoutes");
+const authRoutes = require("./routes/authRoutes");
+const userRoutes = require("./routes/userRoutes")
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 const cors = require("cors");
 app.use(cors());
 
@@ -15,7 +17,9 @@ app.get("/", (req, res) => {
     res.send("Backend is Working!");
 });
 
-app.use('/api/users', userRoutes);
+//Route
+app.use('/api/users', authRoutes);//auth route
+app.use('/api/users/', userRoutes)
 
 app.listen(PORT, () => {
     console.log(`Server is running on ${PORT}`);
