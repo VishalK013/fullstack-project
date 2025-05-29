@@ -134,7 +134,6 @@ function AdminPage() {
           <List>
             {["Dashboard", "Orders", "Products", "Users"].map((text, index) => (
               <ListItem
-                button
                 key={text}
                 selected={activeSection === text}
                 onClick={() => {
@@ -153,7 +152,7 @@ function AdminPage() {
           </List>
         </Drawer>
 
-        <Box component="main" sx={{ flexGrow: 1, p: 3, display: "flex", justifyContent: "center " }} >
+        <Box component="main" sx={{ flexGrow: 1, display: "flex", justifyContent: "center " }} >
           {renderContent()}
         </Box>
       </Box>

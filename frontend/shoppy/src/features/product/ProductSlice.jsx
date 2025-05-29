@@ -24,16 +24,61 @@ export const addProduct = createAsyncThunk('products/addProducts',
     }
 )
 
+export const editProduct = createAsyncThunk("product/editProduct", async ({ id, productData }, { rejectWithValue }) => {
+    try {
+
+        const formData = new FormData();
+        Object.entries(productData).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+                formData.append(key, value);
+            }
+        });
+
+
+        const response = await axios.put(
+            `http://localhost:5000/api/products/${id}`,
+            formData,
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            }
+        );
+
+        return response.data;
+
+    } catch (error) {
+       return rejectWithValue(error.response?.data || error.message); 
+    }
+})
+
+export const deleteProduct = createAsyncThunk("product/deleteProduct", async (id, { rejectWithValue }) => {
+    try {
+
+        const response = await axios.delete(`http://localhost:5000/api/products/${id}`)
+        return response.data;
+
+    } catch (error) {
+
+        return rejectWithValue(error.response.data)
+
+    }
+})
+
 const productSlice = createSlice({
     name: "products",
     initialState: {
         products: [],
-        product: null,
         loading: false,
         error: null,
         addProductSuccess: false,
     },
-    reducers: {},
+    reducers: {
+
+        resetAddProductSuccess: (state) => {
+            state.addProductSuccess = false;
+        },
+    },
     extraReducers: (builder) => {
         builder
             .addCase(fetchProducts.pending, (state) => {
@@ -61,8 +106,24 @@ const productSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload || 'Something went wrong';
                 state.addProductSuccess = false;
+            })
+            .addCase(editProduct.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(editProduct.fulfilled, (state, action) => {
+                state.loading = false;
+                const index = state.products.findIndex(p => p._id === action.payload._id);
+                if (index !== -1) {
+                    state.products[index] = action.payload;
+                }
+            })
+            .addCase(editProduct.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload || 'Failed to edit product';
             });
     }
 })
 
+export const { resetAddProductSuccess, } = productSlice.actions;
 export default productSlice.reducer;

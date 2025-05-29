@@ -1,7 +1,10 @@
+const fs = require('fs');
+const path = require('path');
 const Product = require("../model/productModel");
 
-const addProduct = async (req, res) => {
+exports.addProduct = async (req, res) => {
     try {
+
         const { name, price, description, category, rating } = req.body;
 
         if (!name || !price || !description || !category || !rating || !req.file) {
@@ -21,19 +24,75 @@ const addProduct = async (req, res) => {
 
         await product.save();
         res.status(201).json(product);
+
     } catch (error) {
+
         console.error("Error while adding product:", error);
         res.status(500).json({ error: "Failed to add product" });
+
+    }
+};
+exports.editProduct = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const product = await Product.findById(id);
+        if (!product) return res.status(404).json({ message: "Product not found!" });
+
+        if (req.file) {
+            if (product.image) {
+                const oldPath = path.join(__dirname, "..", product.image);
+                if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+            }
+            product.image = `/uploads/${req.file.filename}`;
+        }
+
+        const fields = ["name", "price", "description", "category", "rating"];
+        fields.forEach((field) => {
+            if (req.body[field] !== undefined) {
+                product[field] = req.body[field];
+            }
+        });
+
+        const updated = await product.save();
+        res.status(200).json(updated);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: error.message });
     }
 };
 
-const getAllProducts = async (req, res) => {
+
+exports.deleteProduct = async (req, res) => {
     try {
+
+        const product = await Product.findById(req.params.id);
+        if (!product) return res.status(404).json({ message: 'Product not found' });
+
+        if (product.image) {
+            fs.unlinkSync(path.join(__dirname, '..', product.image));
+        }
+
+        await Product.findByIdAndDelete(req.params.id);
+        res.status(200).json({ message: 'Product deleted successfully' });
+
+    } catch (err) {
+
+        res.status(500).json({ message: err.message });
+
+    }
+};
+
+
+exports.getAllProducts = async (req, res) => {
+    try {
+
         const products = await Product.find();
         res.status(200).json(products);
+
     } catch (error) {
+
         res.status(500).json({ error: "Failed to fetch products" });
+
     }
 };
 
-module.exports = { addProduct, getAllProducts}
