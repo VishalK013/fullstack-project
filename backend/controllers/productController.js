@@ -2,6 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const Product = require("../model/productModel");
 
+
+
 exports.addProduct = async (req, res) => {
     try {
 
@@ -11,6 +13,8 @@ exports.addProduct = async (req, res) => {
             return res.status(400).json({ error: "All fields are required" });
         }
 
+        const soldNumber = sold ? Number(sold) : 0;
+
         const imageUrl = `/uploads/${req.file.filename}`;
 
         const product = new Product({
@@ -19,6 +23,7 @@ exports.addProduct = async (req, res) => {
             description,
             category,
             rating,
+            sold: soldNumber,
             image: imageUrl,
         });
 
@@ -46,10 +51,14 @@ exports.editProduct = async (req, res) => {
             product.image = `/uploads/${req.file.filename}`;
         }
 
-        const fields = ["name", "price", "description", "category", "rating"];
+        const fields = ["name", "price", "description", "category", "rating", "sold"];
         fields.forEach((field) => {
             if (req.body[field] !== undefined) {
-                product[field] = req.body[field];
+                if (field === "sold") {
+                    product.sold = Number(req.body.sold);
+                } else {
+                    product[field] = req.body[field];
+                }
             }
         });
 
@@ -107,3 +116,13 @@ exports.getNewArrivals = async (req, res) => {
     }
 }
 
+exports.getTopSellings = async (req, res) => {
+    try {
+        const topSellings = await Product.find()
+            .sort({ sold: -1 })
+            .limit(4);
+        res.json(topSellings)
+    } catch (error) {
+        res.status(404).json({ message: "Failed to fetch Top Sellings", error: error.message })
+    }
+}

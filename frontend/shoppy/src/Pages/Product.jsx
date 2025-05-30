@@ -63,6 +63,7 @@ const Product = () => {
             description: "",
             category: "",
             rating: "",
+            sold: "",
             image: null,
         },
         validationSchema: Yup.object({
@@ -71,6 +72,7 @@ const Product = () => {
             description: Yup.string().required("Required"),
             category: Yup.string().required("Required"),
             rating: Yup.number().typeError("Must be a number").min(0).max(5).required(),
+            sold: Yup.number().typeError("Must be a number").min(0, "Cannot be negative").required("Sold quantity is required"),
             image: Yup.mixed().test("fileType", "Unsupported Format", value => {
                 if (!value || typeof value === "string") return true;
                 return ["image/jpeg", "image/png", "image/jpg"].includes(value.type);
@@ -129,13 +131,18 @@ const Product = () => {
     const handleEdit = (product) => {
         formik.setValues({
             ...product,
-            image: `http://localhost:5000${product.image}`,
+            image: null,
+            sold: product.sold || 0,
         });
         setIsEditing(true);
         setEditProductId(product._id);
         setFormDialogOpen(true);
     };
 
+    useEffect(() => {
+        console.log("Formik values:", formik.values);
+    }, [formik.values]);
+    
     const renderedProducts = useMemo(() => (
         <TableContainer component={Paper} sx={{ borderRadius: 4, mt: 3 }}>
             <Table>
@@ -196,12 +203,12 @@ const Product = () => {
                         {isEditing ? "Edit Product" : "Add New Product"}
                     </Typography>
 
-                    {["name", "price", "description", "category", "rating"].map((field) => (
+                    {["name", "price", "description", "category", "rating", "sold"].map((field) => (
                         <TextField
                             key={field}
                             label={field.charAt(0).toUpperCase() + field.slice(1)}
                             name={field}
-                            type={["price", "rating"].includes(field) ? "number" : "text"}
+                            type={["price", "rating", "sold"].includes(field) ? "number" : "text"}
                             fullWidth
                             sx={{
                                 '& .MuiInputBase-input': {

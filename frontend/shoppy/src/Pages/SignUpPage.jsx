@@ -26,6 +26,7 @@ const inputStyle = {
     "& .MuiOutlinedInput-notchedOutline": {
         border: "none",
     },
+    position: "relative",
 };
 
 function SignUpPage() {
@@ -39,18 +40,22 @@ function SignUpPage() {
     const [errors, setErrors] = useState({});
 
     const dispatch = useDispatch();
-    const { loading,success, error } = useSelector((state) => state.user);
+    const { loading, success, error } = useSelector((state) => state.user);
     const navigate = useNavigate();
 
+    // Navigate and clear status only when signup succeeds
     useEffect(() => {
         if (success) {
             navigate("/login");
         }
+    }, [success, navigate]);
 
+    // Clear status on unmount or when error occurs
+    useEffect(() => {
         return () => {
             dispatch(clearStatus());
         };
-    }, [dispatch, success, navigate]);
+    }, [dispatch]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -86,15 +91,7 @@ function SignUpPage() {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!validateForm()) return;
-
         dispatch(signupUser(formData));
-
-        setFormData({
-            username: "",
-            email: "",
-            password: "",
-            role: "user"
-        });
     };
 
     return (
@@ -130,6 +127,7 @@ function SignUpPage() {
                     Sign up
                 </Typography>
 
+                {/* Username */}
                 <Box sx={inputRow}>
                     <PersonIcon color="action" sx={{ fontSize: 27 }} />
                     <TextField
@@ -153,13 +151,11 @@ function SignUpPage() {
                                 position: "absolute",
                             },
                         }}
-                        sx={{
-                            ...inputStyle,
-                            position: "relative",
-                        }}
+                        sx={inputStyle}
                     />
                 </Box>
 
+                {/* Email */}
                 <Box sx={inputRow}>
                     <MailOutlineIcon color="action" sx={{ fontSize: 27 }} />
                     <TextField
@@ -183,13 +179,11 @@ function SignUpPage() {
                                 position: "absolute",
                             },
                         }}
-                        sx={{
-                            ...inputStyle,
-                            position: "relative",
-                        }}
+                        sx={inputStyle}
                     />
                 </Box>
 
+                {/* Password */}
                 <Box sx={inputRow}>
                     <LockIcon color="action" sx={{ fontSize: 27 }} />
                     <TextField
@@ -213,10 +207,7 @@ function SignUpPage() {
                                 position: "absolute",
                             },
                         }}
-                        sx={{
-                            ...inputStyle,
-                            position: "relative",
-                        }}
+                        sx={inputStyle}
                     />
                 </Box>
 

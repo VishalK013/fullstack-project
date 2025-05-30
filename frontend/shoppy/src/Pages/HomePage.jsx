@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Button } from '@mui/material';
+import { Box, Typography, Button, Divider } from '@mui/material';
 import Hero from '../assets/Hero.png';
 import Hero2 from '../assets/Hero2.png';
 import vector1 from "../assets/Vector.png";
@@ -11,6 +11,7 @@ import prada from "../assets/Prada.png"
 import CK from "../assets/CK.png"
 import Navbar from '../components/Navbar';
 import NewArrival from '../components/NewArrival';
+import TopSellings from '../components/TopSellings';
 
 function Home() {
     return (
@@ -224,6 +225,8 @@ function Home() {
                 </Box>
             </Box >
             <NewArrival/>
+            <Divider variant='middle'sx={{ width: '90%', margin: 'auto' }}/>
+            <TopSellings/>
         </Box>
     );
 }

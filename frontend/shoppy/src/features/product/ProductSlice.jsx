@@ -19,6 +19,15 @@ export const fetchNewArrivals = createAsyncThunk("newProduct/fetch", async (_, {
     }
 })
 
+export const topSellings = createAsyncThunk("topSellings/fetch", async (_, { rejectWithValue }) => {
+    try {
+        const res = await axios.get("http://localhost:5000/api/products/top-sellings");
+        return res.data
+    } catch (error) {
+        return rejectWithValue(error.response?.data || "Failed to fetch top selling product")
+    }
+})
+
 export const addProduct = createAsyncThunk('products/addProducts',
     async (formData, { rejectWithValue }) => {
         try {
@@ -77,6 +86,8 @@ const productSlice = createSlice({
     name: "products",
     initialState: {
         products: [],
+        newArrival:[],
+        topSelling:[],
         loading: false,
         error: null,
         addProductSuccess: false,
@@ -105,9 +116,20 @@ const productSlice = createSlice({
             })
             .addCase(fetchNewArrivals.fulfilled, (state, action) => {
                 state.loading = false;
-                state.products = action.payload;
+                state.newArrival = action.payload;
             })
             .addCase(fetchNewArrivals.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(topSellings.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(topSellings.fulfilled, (state, action) => {
+                state.loading = false;
+                state.topSelling = action.payload
+            })
+            .addCase(topSellings.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })

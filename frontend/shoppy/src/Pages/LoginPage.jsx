@@ -28,6 +28,7 @@ function LoginPage() {
             } else {
                 navigate("/");
             }
+            setFormData({ email: "", password: "" }); // Clear form on success
         }
 
         return () => {
@@ -66,11 +67,21 @@ function LoginPage() {
         if (!validateForm()) return;
         lastEmailRef.current = formData.email;
         dispatch(loginUser(formData));
-        // setFormData({ email: "", password: "" });
     };
 
     return (
-        <Box sx={{ height: "100%", width: "100%", display: "flex", alignItems: "center", justifyContent: "center", bgcolor: "background.default", px: 2, pt: "10%" }}>
+        <Box
+            sx={{
+                height: "100%",
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                bgcolor: "background.default",
+                px: 2,
+                pt: "10%",
+            }}
+        >
             <Paper
                 component="form"
                 onSubmit={handleSubmit}
@@ -86,8 +97,11 @@ function LoginPage() {
                     backgroundColor: "#fff",
                     gap: 3,
                 }}
+                noValidate
             >
-                <Typography variant="h3" fontWeight={900}>Sign in</Typography>
+                <Typography variant="h3" fontWeight={900}>
+                    Sign in
+                </Typography>
 
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, width: "100%" }}>
                     <MailOutlineIcon color="action" sx={{ fontSize: 27 }} />
@@ -102,6 +116,7 @@ function LoginPage() {
                         onChange={handleChange}
                         error={Boolean(errors.email)}
                         helperText={errors.email}
+                        autoComplete="email"
                         FormHelperTextProps={{
                             sx: {
                                 right: 0,
@@ -112,7 +127,11 @@ function LoginPage() {
                                 position: "absolute",
                             },
                         }}
-                        sx={{ backgroundColor: "#edebeb", "& .MuiOutlinedInput-notchedOutline": { border: "none" }, position: "relative" }}
+                        sx={{
+                            backgroundColor: "#edebeb",
+                            "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+                            position: "relative",
+                        }}
                     />
                 </Box>
 
@@ -129,6 +148,7 @@ function LoginPage() {
                         onChange={handleChange}
                         error={Boolean(errors.password)}
                         helperText={errors.password}
+                        autoComplete="current-password"
                         FormHelperTextProps={{
                             sx: {
                                 right: 0,
@@ -139,7 +159,11 @@ function LoginPage() {
                                 position: "absolute",
                             },
                         }}
-                        sx={{ backgroundColor: "#edebeb", "& .MuiOutlinedInput-notchedOutline": { border: "none" }, position: "relative" }}
+                        sx={{
+                            backgroundColor: "#edebeb",
+                            "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+                            position: "relative",
+                        }}
                     />
                 </Box>
 
@@ -163,7 +187,7 @@ function LoginPage() {
                     disabled={loading}
                     sx={{ width: 200, fontSize: 15 }}
                 >
-                    Log in
+                    {loading ? "Logging in..." : "Log in"}
                 </Button>
             </Paper>
         </Box>

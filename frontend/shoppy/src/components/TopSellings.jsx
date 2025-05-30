@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchNewArrivals } from "../features/product/ProductSlice"
+import { topSellings } from "../features/product/ProductSlice"
 import {
     Grid,
     Card,
@@ -12,25 +12,25 @@ import {
     Button,
 } from "@mui/material";
 
-function NewArrival() {
+function TopSellings() {
 
     const dispatch = useDispatch();
-    const { newArrival, error, status } = useSelector((state) => state.product)
+    const { topSelling, error, status } = useSelector((state) => state.product)
 
     useEffect(() => {
-        dispatch(fetchNewArrivals())
+        dispatch(topSellings())
     }, [dispatch])
 
-    if (status === 'loading') return <p>Loading new arrivals...</p>;
+    if (status === 'loading') return <p>Loading top sellings...</p>;
     if (status === 'failed') return <p>Error: {error}</p>;
 
     return (
         <Box px={2} py={4} textAlign={"center"}>
             <Typography variant="h3" fontWeight="900" mt={5} mb={5} gutterBottom>
-                New Arrivals
+                Top Sellings
             </Typography>
             <Grid container spacing={3} justifyContent={"center"}>
-                {newArrival.map((product) => (
+                {topSelling.map((product) => (
                     <Grid key={product._id}>
                         <Card sx={{ height: '100%', boxShadow: 'none', border: 'none', textAlign: "left" }}>
                             <CardMedia
@@ -63,11 +63,11 @@ function NewArrival() {
                     </Grid>
                 ))}
             </Grid>
-            <Button variant='outlined' sx={{my:3}}>
+            <Button variant='outlined' sx={{ my: 3 }}>
                 View All
             </Button>
         </Box>
     )
 }
 
-export default NewArrival
+export default TopSellings
