@@ -183,7 +183,7 @@ const Product = () => {
     ), [products]);
 
     return (
-        <Box width="100%" py={4} px={{ xs: 2, sm: 4, md: 10 }} textAlign="center">
+        <Box width="100%" py={4} px={{ xs: 2, sm: 4, md: 10 }} textAlign="right">
             <Button variant="contained" onClick={openForm}>Add Product</Button>
 
             <Box mt={2}>{renderedProducts}</Box>

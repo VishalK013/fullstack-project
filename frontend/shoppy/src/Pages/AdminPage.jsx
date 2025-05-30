@@ -13,6 +13,7 @@ import MailIcon from "@mui/icons-material/Mail";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { useDispatch } from "react-redux";
 import { logOutUser } from "../features/user/UserSlice";
+import UserList from "./UserList";
 
 const drawerWidth = 240;
 
@@ -92,7 +93,7 @@ function AdminPage() {
       case "Products":
         return <Products />;
       case "Users":
-        return <Typography variant="h5">User list and actions will be here.</Typography>;
+        return <UserList />;
       default:
         return <Typography variant="h6">Select a section</Typography>;
     }

@@ -10,10 +10,13 @@ import LoginPage from "./Pages/LoginPage";
 import AdminPage from "./Pages/AdminPage";
 import ProtectedRoute from './components/auth/Protectedroute';
 import UnauthorizedPage from './Pages/UnauthorizedPage';
+import Product from './Pages/Product';
+import UserList from './Pages/UserList';
 
 const AppRoutes = () => {
   const location = useLocation();
-  const hideNavbar = ["/login", "/signup","/admin"].includes(location.pathname);
+  const hideNavbar = location.pathname.startsWith("/admin") || ["/login", "/signup"].includes(location.pathname);
+
 
   return (
     <>
@@ -31,7 +34,23 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
-        <Route path='/unauthorized' element={<UnauthorizedPage/>}></Route>
+        <Route
+          path='/admin/product'
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <Product />
+            </ProtectedRoute>
+          }
+        />
+         <Route
+          path='/admin/users'
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <UserList />
+            </ProtectedRoute>
+          }
+        />
+        <Route path='/unauthorized' element={<UnauthorizedPage />}></Route>
       </Routes>
     </>
   );

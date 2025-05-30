@@ -46,11 +46,31 @@ export const loginUser = createAsyncThunk(
     }
 )
 
+export const fetchUser = createAsyncThunk(
+    "user/fetchUsers",
+    async (_, { rejectWithValue }) => {
+        try {
+
+            const response = await axios.get("http://192.168.2.223:5000/api/users")
+
+            return response.data;
+
+        } catch (error) {
+            if (error.response && error.response.data.error) {
+                return rejectWithValue(error.response.data.error);
+            } else {
+                return rejectWithValue("Network error");
+            }
+        }
+    }
+)
+
 const userSlice = createSlice({
     name: "user",
     initialState: {
         user: userFromStorage || null,
         token: tokenFromStorage || null,
+        users: [],
         loading: false,
         error: null,
         success: null
@@ -106,6 +126,19 @@ const userSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
+            //Fetch User
+            .addCase(fetchUser.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchUser.fulfilled, (state, action) => {
+                state.loading = false;
+                state.users = action.payload;
+            })
+            .addCase(fetchUser.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            });
     }
 })
 

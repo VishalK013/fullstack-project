@@ -1,11 +1,15 @@
 const express = require("express");
-const { verifyToken } = require("../middleware/authMiddleware")
-const { roleMiddleware } = require("../middleware/roleMiddleware")
+const { verifyToken, verifyAdmin } = require("../middleware/authMiddleware")
+const { getAllUsers } = require("../controllers/userController")
 const router = express.Router();
+
+//Route to fetch all users
+
+router.get("/", getAllUsers);
 
 //Only admin can access this router
 
-router.get("/admin", verifyToken, roleMiddleware("admin"), (req, res) => {
+router.get("/admin", verifyToken, verifyAdmin, (req, res) => {
   res.json({ message: "Welcome Admin" })
 })
 
