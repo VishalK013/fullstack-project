@@ -28,7 +28,7 @@ function LoginPage() {
             } else {
                 navigate("/");
             }
-            setFormData({ email: "", password: "" }); // Clear form on success
+            setFormData({ email: "", password: "" }); 
         }
 
         return () => {

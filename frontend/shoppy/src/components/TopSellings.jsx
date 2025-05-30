@@ -38,6 +38,7 @@ function TopSellings() {
                                 height="300"
                                 image={`http://localhost:5000${product.image}`}
                                 alt={product.name}
+                                sx={{borderRadius:5}}
                             />
                             <CardContent>
                                 <Typography variant="h6" component="div" gutterBottom>

@@ -12,6 +12,8 @@ import CK from "../assets/CK.png"
 import Navbar from '../components/Navbar';
 import NewArrival from '../components/NewArrival';
 import TopSellings from '../components/TopSellings';
+import DressStyle from '../components/DressStyle';
+import ReviewPage from '../components/ReviewPage';
 
 function Home() {
     return (
@@ -227,6 +229,8 @@ function Home() {
             <NewArrival/>
             <Divider variant='middle'sx={{ width: '90%', margin: 'auto' }}/>
             <TopSellings/>
+            <DressStyle/>
+            <ReviewPage/>
         </Box>
     );
 }

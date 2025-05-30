@@ -43,14 +43,14 @@ function SignUpPage() {
     const { loading, success, error } = useSelector((state) => state.user);
     const navigate = useNavigate();
 
-    // Navigate and clear status only when signup succeeds
+   
     useEffect(() => {
         if (success) {
             navigate("/login");
         }
     }, [success, navigate]);
 
-    // Clear status on unmount or when error occurs
+   
     useEffect(() => {
         return () => {
             dispatch(clearStatus());
