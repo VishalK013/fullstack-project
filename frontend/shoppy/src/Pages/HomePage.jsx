@@ -10,6 +10,7 @@ import gucci from "../assets/Gucci.png"
 import prada from "../assets/Prada.png"
 import CK from "../assets/CK.png"
 import Navbar from '../components/Navbar';
+import NewArrival from '../components/NewArrival';
 
 function Home() {
     return (
@@ -222,7 +223,7 @@ function Home() {
                     />
                 </Box>
             </Box >
-
+            <NewArrival/>
         </Box>
     );
 }

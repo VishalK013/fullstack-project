@@ -96,3 +96,14 @@ exports.getAllProducts = async (req, res) => {
     }
 };
 
+exports.getNewArrivals = async (req, res) => {
+    try {
+        const newArrivals = await Product.find()
+            .sort({ createdAt: -1 })
+            .limit(4);
+        res.json(newArrivals);
+    } catch (error) {
+        res.status(404).json({ message: "Failed to fetch new arrivals", error: error.message })
+    }
+}
+

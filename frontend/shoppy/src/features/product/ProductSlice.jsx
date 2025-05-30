@@ -6,10 +6,18 @@ export const fetchProducts = createAsyncThunk("products/fetch", async (_, { reje
         const res = await axios.get("http://localhost:5000/api/products");
         return res.data;
     } catch (error) {
-        console.error("Error fetching products:", error);
         return rejectWithValue(error.response?.data || "Failed to fetch products");
     }
 });
+
+export const fetchNewArrivals = createAsyncThunk("newProduct/fetch", async (_, { rejectWithValue }) => {
+    try {
+        const res = await axios.get("http://localhost:5000/api/products/new-arrivals");
+        return res.data
+    } catch (error) {
+        return rejectWithValue(error.response?.data || "Failed to fetch new products")
+    }
+})
 
 export const addProduct = createAsyncThunk('products/addProducts',
     async (formData, { rejectWithValue }) => {
@@ -48,7 +56,7 @@ export const editProduct = createAsyncThunk("product/editProduct", async ({ id, 
         return response.data;
 
     } catch (error) {
-       return rejectWithValue(error.response?.data || error.message); 
+        return rejectWithValue(error.response?.data || error.message);
     }
 })
 
@@ -89,6 +97,17 @@ const productSlice = createSlice({
                 state.products = action.payload;
             })
             .addCase(fetchProducts.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            .addCase(fetchNewArrivals.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(fetchNewArrivals.fulfilled, (state, action) => {
+                state.loading = false;
+                state.products = action.payload;
+            })
+            .addCase(fetchNewArrivals.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })

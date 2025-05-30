@@ -1,7 +1,7 @@
 const express = require("express");
 const multer = require("multer");
 const path = require("path");
-const { addProduct, getAllProducts, deleteProduct, editProduct } = require("../controllers/productController");
+const { addProduct, getAllProducts, deleteProduct, editProduct, getNewArrivals } = require("../controllers/productController");
 const uploads = require("../middleware/uploadMiddleware")
 const router = express.Router();
 
@@ -19,6 +19,7 @@ const upload = multer({ storage });
 
 router.post("/add", upload.single("image"), addProduct);
 router.get("/", getAllProducts);
+router.get("/new-arrivals",getNewArrivals)
 router.put("/:id", uploads.single("image"), editProduct)
 router.delete("/:id", deleteProduct)
 
