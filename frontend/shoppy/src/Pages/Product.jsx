@@ -8,19 +8,26 @@ import {
     editProduct
 } from "../features/product/ProductSlice";
 import {
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Paper,
+    IconButton,
+    Avatar,
     TextField,
     Button,
     CircularProgress,
     Box,
     Typography,
-    Card,
-    CardMedia,
-    CardContent,
-    Grid,
     Dialog,
     Grow,
 } from "@mui/material";
 import { useFormik } from "formik";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import * as Yup from "yup";
 
 const Product = () => {
@@ -112,6 +119,13 @@ const Product = () => {
         setProductToDelete(null);
     };
 
+    const openForm = () => {
+        setIsEditing(false);
+        setEditProductId(null);
+        formik.resetForm();
+        setFormDialogOpen(true);
+    };
+
     const handleEdit = (product) => {
         formik.setValues({
             ...product,
@@ -123,39 +137,50 @@ const Product = () => {
     };
 
     const renderedProducts = useMemo(() => (
-        <Grid container spacing={5} justifyContent="center" padding={5} bgcolor="#f5f5f5" borderRadius={4}>
-            {products.map((product) => (
-                <Grid key={product._id}>
-                    <Card sx={{ width: 300, borderRadius: 4, display: "flex", flexDirection: "column" }}>
-                        <CardMedia
-                            component="img"
-                            image={`http://localhost:5000${product.image}`}
-                            alt={product.name}
-                            sx={{ height: 200, objectFit: "cover" }}
-                        />
-                        <CardContent>
-                            <Typography variant="h6" fontWeight="bold">{product.name}</Typography>
-                            <Typography variant="body2"><strong>Category:</strong> {product.category}</Typography>
-                            <Typography variant="body2"><strong>Description:</strong> {product.description}</Typography>
-                            <Typography variant="body2"><strong>Price:</strong> ${product.price}</Typography>
-                            <Typography variant="body2"><strong>Rating:</strong> {product.rating}</Typography>
-                        </CardContent>
-                        <Box display="flex" justifyContent="space-between" p={2} gap={2}>
-                            <Button variant="contained" onClick={() => handleEdit(product)}>Edit</Button>
-                            <Button variant="outlined" color="error" onClick={() => handleDelete(product._id)}>Delete</Button>
-                        </Box>
-                    </Card>
-                </Grid>
-            ))}
-        </Grid>
-    ), [products]);
+        <TableContainer component={Paper} sx={{ borderRadius: 4, mt: 3 }}>
+            <Table>
+                <TableHead>
+                    <TableRow>
+                        <TableCell><strong>Sr. No</strong></TableCell>
+                        <TableCell><strong>Image</strong></TableCell>
+                        <TableCell><strong>Title</strong></TableCell>
+                        <TableCell><strong>Category</strong></TableCell>
+                        <TableCell><strong>Price ($)</strong></TableCell>
+                        <TableCell><strong>Actions</strong></TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {products.map((product, index) => (
+                        <TableRow key={product._id}>
+                            <TableCell>{index + 1}</TableCell>
+                            <TableCell>
+                                <Avatar
+                                    variant="rounded"
+                                    src={`http://localhost:5000${product.image}`}
+                                    alt={product.name}
+                                    sx={{ width: 56, height: 56 }}
+                                />
+                            </TableCell>
+                            <TableCell>
+                                <Typography fontWeight="bold">{product.name}</Typography>
+                            </TableCell>
+                            <TableCell>{product.category}</TableCell>
+                            <TableCell>${product.price}</TableCell>
+                            <TableCell>
+                                <IconButton color="primary" onClick={() => handleEdit(product)}>
+                                    <EditIcon />
+                                </IconButton>
+                                <IconButton color="error" onClick={() => handleDelete(product._id)}>
+                                    <DeleteIcon />
+                                </IconButton>
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </TableContainer>
 
-    const openForm = () => {
-        setIsEditing(false);
-        setEditProductId(null);
-        formik.resetForm();
-        setFormDialogOpen(true);
-    };
+    ), [products]);
 
     return (
         <Box width="100%" py={4} px={{ xs: 2, sm: 4, md: 10 }} textAlign="center">
