@@ -15,7 +15,7 @@ router.get("/admin", verifyToken, verifyAdmin, (req, res) => {
 
 // All can access this router
 
-router.get("/user", verifyToken, roleMiddleware("admin", "user"), (req, res) => {
+router.get("/user", verifyToken, (req, res) => {
   res.json({ message: "Welcome User" })
 })
 
