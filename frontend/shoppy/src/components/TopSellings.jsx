@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { topSellings } from "../features/product/ProductSlice"
+import { addToCart, topSellings } from "../features/product/ProductSlice"
 import {
     Grid,
     Card,
@@ -11,18 +11,26 @@ import {
     Box,
     Button,
 } from "@mui/material";
+import { Link } from 'react-router-dom';
 
 function TopSellings() {
-
+    // console.log("TopSellings rendered");
     const dispatch = useDispatch();
     const { topSelling, error, status } = useSelector((state) => state.product)
 
     useEffect(() => {
-        dispatch(topSellings())
-    }, [dispatch])
+        if (status !== 'success') {
+            dispatch(topSellings());
+        }
+    }, [dispatch, status]);
+
 
     if (status === 'loading') return <p>Loading top sellings...</p>;
     if (status === 'failed') return <p>Error: {error}</p>;
+
+    const handleAddToCart = (product) => {
+        dispatch(addToCart({ ...product, quantity: 1 }))
+    }
 
     return (
         <Box px={2} py={4} textAlign={"center"}>
@@ -32,19 +40,20 @@ function TopSellings() {
             <Grid container spacing={3} justifyContent={"center"}>
                 {topSelling.map((product) => (
                     <Grid key={product._id}>
-                        <Card sx={{ height: '100%', boxShadow: 'none', border: 'none', textAlign: "left" }}>
+                        <Card sx={{ height: '100%', boxShadow: 'none', border: 'none', textAlign: "center" }}>
                             <CardMedia
                                 component="img"
                                 height="300"
+                                loading="lazy"
                                 image={`http://localhost:5000${product.image}`}
                                 alt={product.name}
-                                sx={{borderRadius:5}}
+                                sx={{ borderRadius: 5 }}
                             />
                             <CardContent>
                                 <Typography variant="h6" component="div" gutterBottom>
                                     {product.name}
                                 </Typography>
-                                <Box display="flex" alignItems="center" gap={1}>
+                                <Box display="flex" alignItems="center" justifyContent={"center"} gap={1}>
                                     <Rating
                                         value={product.rating}
                                         readOnly
@@ -58,7 +67,16 @@ function TopSellings() {
                                 <Typography variant="body2" color="black" fontWeight={700} mt={1} fontSize={22} gutterBottom>
                                     ${product.price}
                                 </Typography>
-
+                                <Box alignItems={"center"} gap={2} mt={2} display={"flex"} flexDirection={"column"}>
+                                    <Link to={`/product/${product._id}`}>
+                                        <Button variant="contained" color="primary">
+                                            Buy Now
+                                        </Button>
+                                    </Link>
+                                    <Button variant="contained" color="primary" onClick={() => handleAddToCart(product)}>
+                                        Add to Cart
+                                    </Button>
+                                </Box>
                             </CardContent>
                         </Card>
                     </Grid>

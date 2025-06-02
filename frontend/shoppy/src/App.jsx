@@ -12,6 +12,8 @@ import ProtectedRoute from './components/auth/Protectedroute';
 import UnauthorizedPage from './Pages/UnauthorizedPage';
 import Product from './Pages/Product';
 import UserList from './Pages/UserList';
+import SinglePageProduct from './Pages/SinglePageProduct';
+import CartPage from './Pages/CartPage';
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -42,7 +44,7 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
-         <Route
+        <Route
           path='/admin/users'
           element={
             <ProtectedRoute allowedRoles={['admin']}>
@@ -50,6 +52,8 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+        <Route path='/product/:id' element={<SinglePageProduct />}></Route>
+        <Route path='/cart' element={<CartPage/>}></Route>
         <Route path='/unauthorized' element={<UnauthorizedPage />}></Route>
       </Routes>
     </>

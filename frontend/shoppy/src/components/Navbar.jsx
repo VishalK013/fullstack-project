@@ -13,6 +13,7 @@ import {
   ListItem,
   ListItemText,
   Divider,
+  Badge,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
@@ -34,11 +35,16 @@ function Navbar() {
     dispatch(logOutUser());
     navigate("/");
   };
+
   const user = useSelector((state) => state.user.user);
+  const cartItems = useSelector((state) => state.product.cartItems);
 
   const toggleDrawer = (open) => () => {
     setDrawerOpen(open);
   };
+
+  // Calculate total quantity in cart
+  const totalCartQuantity = cartItems.reduce((acc, item) => acc + (item.quantity || 1), 0);
 
   return (
     <Box>
@@ -122,8 +128,12 @@ function Navbar() {
                 sx={{ ml: 1, flex: 1 }}
               />
             </Paper>
-            <IconButton>
-              <ShoppingCartOutlinedIcon />
+
+            {/* Cart icon with badge */}
+            <IconButton component={Link} to="/cart" aria-label="cart">
+              <Badge badgeContent={totalCartQuantity} color="primary">
+                <ShoppingCartOutlinedIcon />
+              </Badge>
             </IconButton>
 
             {user ? (

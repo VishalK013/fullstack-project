@@ -10,6 +10,15 @@ export const fetchProducts = createAsyncThunk("products/fetch", async (_, { reje
     }
 });
 
+export const fetchProductById = createAsyncThunk("product/fetchById", async (id, { rejectWithValue }) => {
+    try {
+        const response = await axios.get(`http://localhost:5000/api/products/${id}`)
+        return response.data;
+    } catch (error) {
+        return rejectWithValue(error.response?.data || "Failed to fetch products");
+    }
+})
+
 export const fetchNewArrivals = createAsyncThunk("newProduct/fetch", async (_, { rejectWithValue }) => {
     try {
         const res = await axios.get("http://localhost:5000/api/products/new-arrivals");
@@ -82,20 +91,39 @@ export const deleteProduct = createAsyncThunk("product/deleteProduct", async (id
     }
 })
 
+const savedCartItems = localStorage.getItem('cartItems')
+    ? JSON.parse(localStorage.getItem('cartItems'))
+    : [];
+
 const productSlice = createSlice({
     name: "products",
     initialState: {
         products: [],
-        newArrival:[],
-        topSelling:[],
+        newArrival: [],
+        topSelling: [],
+        cartItems: savedCartItems,
+        selectedProduct: null,
         loading: false,
         error: null,
         addProductSuccess: false,
     },
     reducers: {
-
         resetAddProductSuccess: (state) => {
             state.addProductSuccess = false;
+        },
+        addToCart: (state, action) => {
+            const item = action.payload
+            const exists = state.cartItems.find(i => i._id === item._id)
+
+            if (exists) {
+                exists.quantity += item.quantity || 1
+            } else {
+                state.cartItems.push({ ...item, quantity: item.quantity || 1 })
+            }
+        },
+        removeFromCart: (state, action) => {
+            const idToRemove = action.payload;
+            state.cartItems = state.cartItems.filter(item => item._id !== idToRemove);
         },
     },
     extraReducers: (builder) => {
@@ -110,6 +138,19 @@ const productSlice = createSlice({
             .addCase(fetchProducts.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
+            })
+            .addCase(fetchProductById.pending, (state) => {
+                state.loading = true
+                state.selectedProduct = null
+                state.error = null
+            })
+            .addCase(fetchProductById.fulfilled, (state, action) => {
+                state.loading = false
+                state.selectedProduct = action.payload
+            })
+            .addCase(fetchProductById.rejected, (state, action) => {
+                state.loading = false
+                state.error = action.error.message
             })
             .addCase(fetchNewArrivals.pending, (state) => {
                 state.loading = true;
@@ -166,5 +207,5 @@ const productSlice = createSlice({
     }
 })
 
-export const { resetAddProductSuccess, } = productSlice.actions;
+export const { resetAddProductSuccess, addToCart ,removeFromCart} = productSlice.actions;
 export default productSlice.reducer;
