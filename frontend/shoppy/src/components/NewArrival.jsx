@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchNewArrivals, addToCart } from "../features/product/ProductSlice"
+import { fetchNewArrivals } from "../features/product/ProductSlice"
+import { addToCart } from "../features/carts/CartSlice"
 import {
     Grid,
     Card,
@@ -25,7 +26,7 @@ function NewArrival() {
     if (status === 'failed') return <p>Error: {error}</p>;
 
     const handleAddToCart = (product) => {
-        dispatch(addToCart({ ...product, quantity: 1 }));
+        dispatch(addToCart({ productId: product._id, quantity: 1 }));
     }
 
     return (

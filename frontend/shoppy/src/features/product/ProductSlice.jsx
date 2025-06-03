@@ -1,9 +1,10 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { baseURL } from "../../common/util";
 
 export const fetchProducts = createAsyncThunk("products/fetch", async (_, { rejectWithValue }) => {
     try {
-        const res = await axios.get("http://localhost:5000/api/products");
+        const res = await axios.get(`${baseURL}/products`);
         return res.data;
     } catch (error) {
         return rejectWithValue(error.response?.data || "Failed to fetch products");
@@ -12,7 +13,7 @@ export const fetchProducts = createAsyncThunk("products/fetch", async (_, { reje
 
 export const fetchProductById = createAsyncThunk("product/fetchById", async (id, { rejectWithValue }) => {
     try {
-        const response = await axios.get(`http://localhost:5000/api/products/${id}`)
+        const response = await axios.get(`${baseURL}/api/products/${id}`)
         return response.data;
     } catch (error) {
         return rejectWithValue(error.response?.data || "Failed to fetch products");
@@ -21,7 +22,7 @@ export const fetchProductById = createAsyncThunk("product/fetchById", async (id,
 
 export const fetchNewArrivals = createAsyncThunk("newProduct/fetch", async (_, { rejectWithValue }) => {
     try {
-        const res = await axios.get("http://localhost:5000/api/products/new-arrivals");
+        const res = await axios.get(`${baseURL}/products/new-arrivals`);
         return res.data
     } catch (error) {
         return rejectWithValue(error.response?.data || "Failed to fetch new products")
@@ -30,7 +31,7 @@ export const fetchNewArrivals = createAsyncThunk("newProduct/fetch", async (_, {
 
 export const topSellings = createAsyncThunk("topSellings/fetch", async (_, { rejectWithValue }) => {
     try {
-        const res = await axios.get("http://localhost:5000/api/products/top-sellings");
+        const res = await axios.get(`${baseURL}/products/top-sellings`);
         return res.data
     } catch (error) {
         return rejectWithValue(error.response?.data || "Failed to fetch top selling product")
@@ -41,7 +42,7 @@ export const addProduct = createAsyncThunk('products/addProducts',
     async (formData, { rejectWithValue }) => {
         try {
 
-            const response = await axios.post("http://localhost:5000/api/products/add", formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+            const response = await axios.post(`${baseURL}/products/add`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
             return response.data;
 
         } catch (err) {
@@ -62,7 +63,7 @@ export const editProduct = createAsyncThunk("product/editProduct", async ({ id, 
 
 
         const response = await axios.put(
-            `http://localhost:5000/api/products/${id}`,
+            `${baseURL}/products/${id}`,
             formData,
             {
                 headers: {
@@ -81,7 +82,7 @@ export const editProduct = createAsyncThunk("product/editProduct", async ({ id, 
 export const deleteProduct = createAsyncThunk("product/deleteProduct", async (id, { rejectWithValue }) => {
     try {
 
-        const response = await axios.delete(`http://localhost:5000/api/products/${id}`)
+        const response = await axios.delete(`${baseURL}/products/${id}`)
         return response.data;
 
     } catch (error) {
@@ -91,9 +92,6 @@ export const deleteProduct = createAsyncThunk("product/deleteProduct", async (id
     }
 })
 
-const savedCartItems = localStorage.getItem('cartItems')
-    ? JSON.parse(localStorage.getItem('cartItems'))
-    : [];
 
 const productSlice = createSlice({
     name: "products",
@@ -101,29 +99,15 @@ const productSlice = createSlice({
         products: [],
         newArrival: [],
         topSelling: [],
-        cartItems: savedCartItems,
         selectedProduct: null,
         loading: false,
         error: null,
         addProductSuccess: false,
     },
     reducers: {
+
         resetAddProductSuccess: (state) => {
             state.addProductSuccess = false;
-        },
-        addToCart: (state, action) => {
-            const item = action.payload
-            const exists = state.cartItems.find(i => i._id === item._id)
-
-            if (exists) {
-                exists.quantity += item.quantity || 1
-            } else {
-                state.cartItems.push({ ...item, quantity: item.quantity || 1 })
-            }
-        },
-        removeFromCart: (state, action) => {
-            const idToRemove = action.payload;
-            state.cartItems = state.cartItems.filter(item => item._id !== idToRemove);
         },
     },
     extraReducers: (builder) => {
@@ -207,5 +191,5 @@ const productSlice = createSlice({
     }
 })
 
-export const { resetAddProductSuccess, addToCart ,removeFromCart} = productSlice.actions;
+export const { resetAddProductSuccess, } = productSlice.actions;
 export default productSlice.reducer;

@@ -2,41 +2,56 @@ const fs = require('fs');
 const path = require('path');
 const Product = require("../model/productModel");
 
-
-
 exports.addProduct = async (req, res) => {
     try {
+        const { name, price, description, category, rating, sold } = req.body;
 
-        const { name, price, description, category, rating } = req.body;
-
-        if (!name || !price || !description || !category || !rating || !req.file) {
-            return res.status(400).json({ error: "All fields are required" });
+        if (!name || !price || !description || !category || !rating) {
+            return res.status(400).json({ error: "All fields except sold and image are required" });
         }
 
+        if (!req.file) {
+            return res.status(400).json({ error: "Product image is required" });
+        }
+
+        const priceNumber = Number(price);
+        const ratingNumber = Number(rating);
         const soldNumber = sold ? Number(sold) : 0;
+
+        if (isNaN(priceNumber) || priceNumber <= 0) {
+            return res.status(400).json({ error: "Price must be a positive number" });
+        }
+
+        if (isNaN(ratingNumber) || ratingNumber < 0 || ratingNumber > 5) {
+            return res.status(400).json({ error: "Rating must be a number between 0 and 5" });
+        }
+
+        if (isNaN(soldNumber) || soldNumber < 0) {
+            return res.status(400).json({ error: "Sold must be a non-negative number" });
+        }
 
         const imageUrl = `/uploads/${req.file.filename}`;
 
         const product = new Product({
             name,
-            price,
+            price: priceNumber,
             description,
             category,
-            rating,
+            rating: ratingNumber,
             sold: soldNumber,
             image: imageUrl,
         });
 
         await product.save();
-        res.status(201).json(product);
+
+        return res.status(201).json(product);
 
     } catch (error) {
-
         console.error("Error while adding product:", error);
-        res.status(500).json({ error: "Failed to add product" });
-
+        return res.status(500).json({ error: "Failed to add product" });
     }
 };
+
 exports.editProduct = async (req, res) => {
     try {
         const { id } = req.params;

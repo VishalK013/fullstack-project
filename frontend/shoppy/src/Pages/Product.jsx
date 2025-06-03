@@ -164,6 +164,7 @@ const Product = () => {
                                 <Avatar
                                     variant="rounded"
                                     src={`http://localhost:5000${product.image}`}
+                                    loading="lazy"
                                     alt={product.name}
                                     sx={{ width: 56, height: 56 }}
                                 />

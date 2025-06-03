@@ -10,7 +10,7 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { addToCart, removeFromCart } from "../features/product/ProductSlice";
+import { addToCart, removeFromCart } from "../features/carts/CartSlice"
 
 const CartItem = React.memo(({ item, onIncrement, onDecrement, onRemove }) => {
     return (
@@ -29,14 +29,14 @@ const CartItem = React.memo(({ item, onIncrement, onDecrement, onRemove }) => {
         >
             <Box
                 component="img"
-                src={`http://localhost:5000${item.image}`}
+                src={`http://localhost:5000${item.product?.image || item.image}`}
                 width={100}
                 loading="lazy"
             />
             <Box>
-                <Typography variant="h6">{item.name}</Typography>
+                <Typography variant="h6">{item.product?.name || item.name}</Typography>
                 <Typography color="text.secondary">
-                    Price: ${item.price ? item.price.toFixed(2) : "0.00"}
+                    Price: ${item.product?.price?.toFixed(2) || item.price?.toFixed(2) || "0.00"}
                 </Typography>
             </Box>
             <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -60,7 +60,7 @@ const CartItem = React.memo(({ item, onIncrement, onDecrement, onRemove }) => {
                     variant="contained"
                     sx={{ backgroundColor: "red" }}
                     startIcon={<DeleteIcon />}
-                    onClick={onRemove}
+                    onClick={() => onRemove(item.product || item._id)}
                 >
                     Remove
                 </Button>
@@ -70,9 +70,9 @@ const CartItem = React.memo(({ item, onIncrement, onDecrement, onRemove }) => {
 });
 
 const CartPage = () => {
-    const dispatch = useDispatch();
-    const cartItems = useSelector((state) => state.product.cartItems);
 
+    const dispatch = useDispatch();
+    const cartItems = useSelector((state) => state.cart.items);
 
     const totalPrice = cartItems.reduce((acc, item) => {
         const price = Number(item.price) || 0;
@@ -87,6 +87,7 @@ const CartPage = () => {
             </Box>
         );
     }
+
 
     return (
         <Box
@@ -110,15 +111,22 @@ const CartPage = () => {
                 boxShadow
             >
                 {cartItems.map((item) => (
+
                     <CartItem
                         key={item._id}
                         item={item}
-                        onIncrement={() => dispatch(addToCart({ ...item, quantity: 1 }))}
-                        onDecrement={() =>
-                            item.quantity > 1 && dispatch(addToCart({ ...item, quantity: -1 }))
+                        onIncrement={() =>
+                            dispatch(addToCart({ productId: item.product?._id || item.product, quantity: 1 }))
                         }
-                        onRemove={() => dispatch(removeFromCart(item._id))}
+                        onDecrement={() =>
+                            item.quantity > 1 &&
+                            dispatch(addToCart({ productId: item.product?._id || item.product, quantity: -1 }))
+                        }
+                        onRemove={() =>
+                            dispatch(removeFromCart(item.product?._id || item.product))
+                        }
                     />
+
                 ))}
             </Box>
             <Box

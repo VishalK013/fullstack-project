@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios"
+import { baseURL } from "../../common/util";
 
 const userFromStorage = JSON.parse(localStorage.getItem("user"));
 const tokenFromStorage = localStorage.getItem("token");
@@ -10,7 +11,7 @@ export const signupUser = createAsyncThunk(
 
         try {
 
-            const response = await axios.post("http://192.168.2.223:5000/api/users/register", userdata);
+            const response = await axios.post(`${baseURL}/api/users/register`, userdata);
             return response.data;
 
         } catch (err) {
@@ -31,7 +32,7 @@ export const loginUser = createAsyncThunk(
 
         try {
 
-            const response = await axios.post("http://192.168.2.223:5000/api/users/login", userdata);
+            const response = await axios.post(`${baseURL}/users/login`, userdata);
             return response.data;
 
         } catch (err) {
@@ -51,7 +52,7 @@ export const fetchUser = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
 
-            const response = await axios.get("http://192.168.2.223:5000/api/users")
+            const response = await axios.get(`${baseURL}/users`)
 
             return response.data;
 

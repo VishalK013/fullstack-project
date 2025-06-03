@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { addToCart, fetchProductById } from '../features/product/ProductSlice'
+import { fetchProductById } from '../features/product/ProductSlice'
+import { addToCart } from "../features/carts/CartSlice"
 
 import {
     Box,
@@ -26,7 +27,7 @@ function SinglePageProduct() {
     }, [dispatch, id])
 
     const handleAddToCart = (product) => {
-        dispatch(addToCart({ ...product, quantity}))
+        dispatch(addToCart({ productId: product._id, quantity }));
     }
 
     const { selectedProduct: product, loading, error } = useSelector(state => state.product)
