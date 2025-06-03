@@ -6,6 +6,10 @@ import i1 from "../assets/ds1.png"
 import i2 from "../assets/ds2.png"
 import i3 from "../assets/ds3.png"
 import i4 from "../assets/ds4.png"
+import i_1 from "../assets/im1.png"
+import i_2 from "../assets/im2.png"
+import i_3 from "../assets/im3.png"
+import i_4 from "../assets/im4.png"
 
 
 function DressStyle() {
@@ -14,16 +18,20 @@ function DressStyle() {
       <Typography variant="h3" color="initial" sx={{ textTransform: "uppercase", fontWeight: "700", py: 10 }}>browse by dress style</Typography>
       <Grid container spacing={2} justifyContent="center" pb={10}>
         <Grid  >
-          <Box component="img" src={i1} borderRadius={5} />
+          <Box component="img" display={{md:"block" ,xs:"none"}} src={i1} borderRadius={5} />
+          <Box component="img" display={{md:"none" ,xs:"block"}} src={i_1} borderRadius={5} />
         </Grid>
         <Grid >
-          <Box component="img" src={i2} borderRadius={5} />
+          <Box component="img" display={{md:"block" ,xs:"none"}} src={i2} borderRadius={5} />
+          <Box component="img" display={{md:"none" ,xs:"block"}} src={i_2} borderRadius={5} />
         </Grid>
         <Grid >
-          <Box component="img" src={i3} borderRadius={5} sx={{ width: 710, height: 310 }} />
+          <Box component="img" display={{md:"block" ,xs:"none"}} src={i3} borderRadius={5} />
+          <Box component="img" display={{md:"none" ,xs:"block"}} src={i_3} borderRadius={5} />
         </Grid>
         <Grid >
-          <Box component="img" src={i4} borderRadius={5} sx={{ height: 310 }} />
+          <Box component="img" display={{md:"block" ,xs:"none"}} src={i4} borderRadius={5} />
+          <Box component="img" display={{md:"none" ,xs:"block"}} src={i_4} borderRadius={5} />
         </Grid>
       </Grid>
 

@@ -62,7 +62,7 @@ function Navbar() {
             backgroundColor: 'black',
             color: 'white',
             textAlign: 'center',
-            fontSize: 13,
+            fontSize: { xs: 9, md: 11, lg: 13 },
             py: 1,
           }}
         >
@@ -72,7 +72,7 @@ function Navbar() {
             size="small"
             sx={{
               position: 'absolute',
-              right: 60,
+              right: { xs: 20, md: 40, lg: 60 },
               top: '50%',
               transform: 'translateY(-50%)',
               color: 'white',
@@ -83,8 +83,8 @@ function Navbar() {
         </Typography>
       )}
 
-      <AppBar position="static" color="default" elevation={1} sx={{ px: 3 }}>
-        <Toolbar sx={{ justifyContent: 'space-between' }}>
+      <AppBar position="static" color="default" elevation={1} sx={{ px: { xs: 0, sm: 0, md: 2, lg: 3 } }}>
+        <Toolbar sx={{ justifyContent: 'space-between', alignItems: "center" }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Box sx={{ display: { md: 'block', lg: 'none' } }}>
               <IconButton onClick={toggleDrawer(true)}>
@@ -116,7 +116,7 @@ function Navbar() {
             <Paper
               component="form"
               sx={{
-                display: 'flex',
+                display: { xs: "none", sm: "flex", md: "flex", lg: "flex" },
                 alignItems: 'center',
                 px: 1,
                 py: 0.5,
@@ -135,25 +135,27 @@ function Navbar() {
             </Paper>
 
             <IconButton component={Link} to="/cart" aria-label="cart">
-              <Badge badgeContent={quantity} color="primary">
-                <ShoppingCartOutlinedIcon />
+              <Badge badgeContent={quantity}  color="primary">
+                <ShoppingCartOutlinedIcon  sx={{fontSize:{xs:20}}} />
               </Badge>
             </IconButton>
 
             {user ? (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Typography sx={{ fontWeight: 600, fontSize: 14 }}>
+                <Typography sx={{ fontWeight: 600, fontSize: { xs: 8, sm: 10, md: 12, lg: 14 } }}>
                   Welcome, {user.username}
                 </Typography>
                 <Button
                   onClick={handleLogout}
-                  variant="text"
+                  variant="contained"
                   size="small"
                   sx={{
                     textTransform: 'none',
-                    color: 'red',
+                    backgroundColor: "red",
                     fontWeight: 'bold',
-                    fontSize: 12,
+                    p:1,
+                    fontSize: { xs: 6, sm: 10 , md: 12},
+                    width: { xs: 50, sm: 80, md: 100 },
                     ml: 1,
                   }}
                 >
@@ -167,7 +169,12 @@ function Navbar() {
                   to="/signup"
                   variant="outlined"
                   size="small"
-                  sx={{ textTransform: 'none', width: "100px" }}
+                  sx={{
+                    textTransform: 'none',
+                    fontSize: { xs: 8, sm: 10, md: 12 },
+                    p: 1,
+                    width: { xs: 50, sm: 80, md: 100 },
+                  }}
                 >
                   Sign Up
                 </Button>
@@ -176,7 +183,12 @@ function Navbar() {
                   to="/login"
                   variant="contained"
                   size="small"
-                  sx={{ textTransform: 'none', width: "100px" }}
+                  sx={{
+                    textTransform: 'none',
+                    fontSize: { xs: 8, sm: 10, md: 12 },
+                    p: 1,
+                    width: { xs: 50, sm: 80, md: 100 },
+                  }}
                 >
                   Sign In
                 </Button>
