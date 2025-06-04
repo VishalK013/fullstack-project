@@ -11,7 +11,7 @@ export const signupUser = createAsyncThunk(
 
         try {
 
-            const response = await axios.post(`${baseURL}/api/users/register`, userdata);
+            const response = await axios.post(`${baseURL}/users/register`, userdata);
             return response.data;
 
         } catch (err) {

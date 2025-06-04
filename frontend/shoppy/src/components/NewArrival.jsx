@@ -26,6 +26,7 @@ function NewArrival() {
     if (status === 'failed') return <p>Error: {error}</p>;
 
     const handleAddToCart = (product) => {
+        console.log("Add to cart clicked for product:", product._id);
         dispatch(addToCart({ productId: product._id, quantity: 1 }));
     }
 

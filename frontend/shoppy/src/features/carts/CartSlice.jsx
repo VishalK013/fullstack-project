@@ -1,25 +1,16 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
-import { baseURL } from "../../common/util";
+import api from "../../api/Api"
 
 export const addToCart = createAsyncThunk(
     "cart/addToCart",
     async ({ productId, quantity }, { getState, rejectWithValue }) => {
         try {
             const token = getState().user.token;
+            console.log(token)
+            const response = await api.post(`/cart/add`, { productId, quantity }, token);
+            console.log(response)
 
-            const response = await axios.post(
-                `${baseURL}/cart/add`,
-                { productId, quantity },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "Content-Type": "application/json"
-                    },
-                }
-            );
-
-            return response.data.items;
+            return response;
         } catch (error) {
             return rejectWithValue(
                 error.response?.data?.message || error.message || "Failed to add to cart"
@@ -34,13 +25,10 @@ export const getCart = createAsyncThunk(
         try {
             const token = getState().user.token;
 
-            const response = await axios.get(`${baseURL}/cart/get`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
+            const response = await api.get("/cart/get", {}, { Authorization: `Bearer ${token}` });
+            console.log("Cart API Response:", response);
 
-            return response.data;
+            return response;
 
         } catch (error) {
             console.log(error)
@@ -51,25 +39,27 @@ export const getCart = createAsyncThunk(
     }
 );
 
-export const removeFromCart = createAsyncThunk("cart/removeFromCart",
-    async (productId, { getState, rejectWithValue }) => {
-        try {
-            const token = getState().user.token
-            console.log(token)
+export const removeFromCart = createAsyncThunk(
+  "cart/removeFromCart",
+  async (productId, { rejectWithValue }) => {
+    try {
+      const data = await api.delete("/cart/remove", { productId });  // data is already response.data
+      console.log("Remove from cart response:", data);
 
-            const response = await axios.delete(`${baseURL}/cart/remove`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                },
-                data: { productId }
-            });
-
-            return { items: response.data.items };
-        } catch (error) {
-            return rejectWithValue(error.response?.data?.message || "Failed to remove from cart")
-        }
+      if (data.success) {
+        return { items: data.items };
+      } else {
+        return rejectWithValue(data.message || "Failed to remove from cart");
+      }
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || error.message || "Failed to remove from cart"
+      );
     }
-)
+  }
+);
+
+
 
 
 const cartSlice = createSlice({
@@ -79,6 +69,7 @@ const cartSlice = createSlice({
         status: "idle",
         cartQuantity: 0,
         error: null,
+        message: null
     },
     reducers: {
         clearCart: (state) => {
@@ -96,16 +87,17 @@ const cartSlice = createSlice({
                 state.error = null;
             })
             .addCase(addToCart.fulfilled, (state, action) => {
+                console.log("Add to cart payload:", action.payload.items);
                 state.status = "succeeded";
-                state.items = action.payload;
-                state.cartQuantity = action.payload.reduce(
-                    (total, item) => total + item.quantity,
-                    0
-                );
+                state.items = action.payload.items;
+                state.cartQuantity = action.payload.items.reduce((total, item) => total + item.quantity, 0);
+                state.message = "Item added to Cart successfully"
+                state.error = null;
             })
             .addCase(addToCart.rejected, (state, action) => {
                 state.status = "failed";
                 state.error = action.payload || action.error.message;
+                state.message = null;
             })
             //Get Cart item
             .addCase(getCart.pending, (state) => {
@@ -140,6 +132,7 @@ const cartSlice = createSlice({
             .addCase(removeFromCart.rejected, (state, action) => {
                 state.status = "failed";
                 state.error = action.payload;
+                console.error("Failed to remove from cart:", state.error);
             })
     },
 });

@@ -37,7 +37,7 @@ exports.addToCart = async (req, res) => {
                 cart.items[itemIndex].quantity += quantity;
 
                 if (cart.items[itemIndex].quantity <= 0) {
-                    cart.items.splice(itemIndex, 1); 
+                    cart.items.splice(itemIndex, 1);
                 } else {
                     cart.items[itemIndex].total = cart.items[itemIndex].quantity * cart.items[itemIndex].price;
                 }
@@ -128,7 +128,7 @@ exports.removeFromCart = async (req, res) => {
             image: item.product.image,
         }));
 
-        res.status(200).json({ items: itemsWithImages });
+        res.status(200).json({ success: true, items: itemsWithImages });
     } catch (error) {
         console.error('Remove from cart error:', error);
         res.status(500).json({ message: "Failed to remove item from cart" });

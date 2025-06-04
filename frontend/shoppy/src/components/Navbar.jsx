@@ -34,6 +34,7 @@ function Navbar() {
 
   const user = useSelector((state) => state.user.user);
   const quantity = useSelector(selectCartQuantity);
+  console.log("Cart quantity in Navbar:", quantity);
 
   useEffect(() => {
     if (user) {

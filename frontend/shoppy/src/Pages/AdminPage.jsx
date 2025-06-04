@@ -14,6 +14,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import { useDispatch } from "react-redux";
 import { logOutUser } from "../features/user/UserSlice";
 import UserList from "./UserList";
+import AdminOrders from "./AdminOrders";
 
 const drawerWidth = 240;
 
@@ -89,7 +90,7 @@ function AdminPage() {
           </Grid>
         );
       case "Orders":
-        return <Typography variant="h5">Orders section coming soon...</Typography>;
+        return <Typography variant="h5"><AdminOrders/></Typography>;
       case "Products":
         return <Products />;
       case "Users":
