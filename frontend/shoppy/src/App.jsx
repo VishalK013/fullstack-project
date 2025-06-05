@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import HomePage from "./Pages/HomePage";
 import Navbar from './components/Navbar';
@@ -14,6 +14,8 @@ import Product from './Pages/Product';
 import UserList from './Pages/UserList';
 import SinglePageProduct from './Pages/SinglePageProduct';
 import CartPage from './Pages/CartPage';
+import { useDispatch } from 'react-redux';
+import { checkTokenExpiration } from "./features/user/UserSlice"
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -53,7 +55,7 @@ const AppRoutes = () => {
           }
         />
         <Route path='/product/:id' element={<SinglePageProduct />}></Route>
-        <Route path='/cart' element={<CartPage/>}></Route>
+        <Route path='/cart' element={<CartPage />}></Route>
         <Route path='/unauthorized' element={<UnauthorizedPage />}></Route>
       </Routes>
     </>
@@ -61,6 +63,17 @@ const AppRoutes = () => {
 };
 
 function App() {
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      dispatch(checkTokenExpiration());
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [dispatch]);
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />

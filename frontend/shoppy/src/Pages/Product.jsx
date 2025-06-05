@@ -131,7 +131,7 @@ const Product = () => {
     const handleEdit = (product) => {
         formik.setValues({
             ...product,
-            image: null,
+            image: `http://localhost:5000${product.image}`,
             sold: product.sold || 0,
         });
         setIsEditing(true);
@@ -142,7 +142,7 @@ const Product = () => {
     useEffect(() => {
         console.log("Formik values:", formik.values);
     }, [formik.values]);
-    
+
     const renderedProducts = useMemo(() => (
         <TableContainer component={Paper} sx={{ borderRadius: 4, mt: 3 }}>
             <Table>

@@ -11,6 +11,8 @@ import {
     DialogContent,
     DialogActions,
     TextField,
+    useMediaQuery,
+    useTheme
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
@@ -21,13 +23,14 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 
 
-const CartItem = React.memo(({ item, onIncrement, onDecrement, onRemove }) => (
+const CartItem = React.memo(({ item, onIncrement, onDecrement, onRemove, isMobile }) => (
     <Paper
         elevation={3}
         sx={{
             p: 2,
             mb: 2,
             display: "flex",
+            flexDirection: isMobile ? "column" : "row",
             justifyContent: "space-between",
             alignItems: "center",
             borderRadius: 2,
@@ -38,25 +41,27 @@ const CartItem = React.memo(({ item, onIncrement, onDecrement, onRemove }) => (
         <Box
             component="img"
             src={`http://localhost:5000${item.product?.image || item.image}`}
-            width={100}
+            width={isMobile ? "100%" : 100}
             loading="lazy"
         />
         <Box>
-            <Typography variant="h6">{item.product?.name || item.name}</Typography>
-            <Typography color="text.secondary">
+            <Typography variant="h6" py={isMobile ? 1 : 0}>{item.product?.name || item.name}</Typography>
+            <Typography color="text.secondary" pb={isMobile ? 1 : 0} textAlign={"center"}>
                 Price: ${item.product?.price?.toFixed(2) || item.price?.toFixed(2) || "0.00"}
             </Typography>
         </Box>
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-            <IconButton aria-label="decrease" onClick={onDecrement} disabled={item.quantity === 1}>
-                <RemoveIcon />
-            </IconButton>
-            <Typography sx={{ mx: 1, minWidth: 25, textAlign: "center", fontWeight: "bold" }}>
-                {item.quantity || 0}
-            </Typography>
-            <IconButton aria-label="increase" onClick={onIncrement}>
-                <AddIcon />
-            </IconButton>
+        <Box sx={{ display: "flex", alignItems: "center" }} flexDirection={isMobile ? "column" : "row"}>
+            <Box display={"flex"} alignItems={"center"} pb={isMobile ? 2 : 0}>
+                <IconButton aria-label="decrease" onClick={onDecrement} disabled={item.quantity === 1}>
+                    <RemoveIcon />
+                </IconButton>
+                <Typography sx={{ mx: 1, minWidth: 25, textAlign: "center", fontWeight: "bold" }}>
+                    {item.quantity || 0}
+                </Typography>
+                <IconButton aria-label="increase" onClick={onIncrement}>
+                    <AddIcon />
+                </IconButton>
+            </Box>
             <Button
                 variant="contained"
                 sx={{ backgroundColor: "red" }}
@@ -74,7 +79,10 @@ const CartPage = () => {
 
     const dispatch = useDispatch();
     const cartItems = useSelector((state) => state.cart.items);
-    const { loading, error, orderConfirmation } = useSelector((state) => state.orders);
+    const { loading, orderConfirmation } = useSelector((state) => state.orders);
+
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
     useEffect(() => {
         if (orderConfirmation) {
@@ -134,6 +142,7 @@ const CartPage = () => {
                     <CartItem
                         key={item._id}
                         item={item}
+                        isMobile={isMobile}
                         onIncrement={() =>
                             dispatch(addToCart({ productId: item.product?._id || item.product, quantity: 1 }))
                         }

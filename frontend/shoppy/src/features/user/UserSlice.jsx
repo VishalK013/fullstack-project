@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios from "axios"
 import { baseURL } from "../../common/util";
+import api from "../../api/Api";
 
 const userFromStorage = JSON.parse(localStorage.getItem("user"));
 const tokenFromStorage = localStorage.getItem("token");
@@ -11,7 +11,7 @@ export const signupUser = createAsyncThunk(
 
         try {
 
-            const response = await axios.post(`${baseURL}/users/register`, userdata);
+            const response = await api.post(`${baseURL}/users/register`, userdata);
             return response.data;
 
         } catch (err) {
@@ -32,8 +32,9 @@ export const loginUser = createAsyncThunk(
 
         try {
 
-            const response = await axios.post(`${baseURL}/users/login`, userdata);
-            return response.data;
+            const response = await api.post(`/users/login`, userdata);
+            localStorage.setItem("expiry", Date.now() + response.expiresIn * 1000);
+            return response;
 
         } catch (err) {
 
@@ -51,10 +52,11 @@ export const fetchUser = createAsyncThunk(
     "user/fetchUsers",
     async (_, { rejectWithValue }) => {
         try {
+            const token = localStorage.getItem("token");
 
-            const response = await axios.get(`${baseURL}/users`)
+            const response = await api.get(`/users`, {}, { Authorization: `Bearer ${token}` });
 
-            return response.data;
+            return response;
 
         } catch (error) {
             if (error.response && error.response.data.error) {
@@ -64,7 +66,8 @@ export const fetchUser = createAsyncThunk(
             }
         }
     }
-)
+);
+
 
 const userSlice = createSlice({
     name: "user",
@@ -89,7 +92,20 @@ const userSlice = createSlice({
 
             localStorage.removeItem("user");
             localStorage.removeItem("token");
-        }
+        },
+        checkTokenExpiration(state) {
+            const expiryTime = localStorage.getItem("expiry");
+
+            if (expiryTime && Date.now() > expiryTime) {
+                localStorage.removeItem("token");
+                localStorage.removeItem("expiry");
+                state.user = null;
+                state.token = null;
+                state.role = null;
+
+                window.location.href = "/login";
+            }
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -102,7 +118,11 @@ const userSlice = createSlice({
             .addCase(signupUser.fulfilled, (state, action) => {
                 state.loading = false;
                 state.user = action.payload.user;
-                state.success = action.payload.message
+                state.token = action.payload.token;
+                state.success = action.payload.message;
+
+                localStorage.setItem("user", JSON.stringify(action.payload));
+                localStorage.setItem("token", action.payload);
             })
             .addCase(signupUser.rejected, (state, action) => {
                 state.loading = false;
@@ -123,6 +143,7 @@ const userSlice = createSlice({
                 localStorage.setItem("user", JSON.stringify(action.payload.user));
                 localStorage.setItem("token", action.payload.token);
             })
+
             .addCase(loginUser.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
@@ -143,6 +164,6 @@ const userSlice = createSlice({
     }
 })
 
-export const { clearStatus, logOutUser } = userSlice.actions
+export const { clearStatus, logOutUser, checkTokenExpiration } = userSlice.actions
 
 export default userSlice.reducer;

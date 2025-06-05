@@ -4,12 +4,11 @@ import Hero from '../assets/Hero.png';
 import Hero2 from '../assets/Hero2.png';
 import vector1 from "../assets/Vector.png";
 import vector2 from "../assets/Vector2.png";
-import versace from "../assets/Versace.png"
-import zara from "../assets/Zara.png"
-import gucci from "../assets/Gucci.png"
-import prada from "../assets/Prada.png"
-import CK from "../assets/CK.png"
-import Navbar from '../components/Navbar';
+import versace from "../assets/Versace.png";
+import zara from "../assets/Zara.png";
+import gucci from "../assets/Gucci.png";
+import prada from "../assets/Prada.png";
+import CK from "../assets/CK.png";
 import NewArrival from '../components/NewArrival';
 import TopSellings from '../components/TopSellings';
 import DressStyle from '../components/DressStyle';
@@ -17,16 +16,14 @@ import ReviewPage from '../components/ReviewPage';
 
 function Home() {
     return (
-
         <Box>
             <Box
                 sx={{
                     minHeight: '100vh',
-                    height: 'auto',
                     backgroundImage: {
-                        xs: 'none',
-                        md: 'none',
                         lg: `url(${Hero})`,
+                        md: 'none',
+                        xs: 'none',
                     },
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
@@ -34,30 +31,33 @@ function Home() {
                     position: 'relative',
                     display: 'flex',
                     justifyContent: "space-between",
-                    flexDirection: { xs: "column", md: 'column', lg: 'column' },
-
+                    flexDirection: 'column',
                 }}
             >
                 <Box
                     width={{ xs: "100%", md: "100%", lg: "80%" }}
                     display="flex"
                     flexDirection="column"
-                    alignItems={{ xs: "center", md: "center", lg: "flex-start" }}
+                    alignItems={{ xs: "center", lg: "flex-start" }}
                     px={5}
                     pb={5}
                     pt={10}
                     sx={{
-                        backgroundColor: { xs: "#F2F0F1", md: "#F2F0F1", lg: "transparent" }
+                        backgroundColor: {
+                            xs: "#F2F0F1",
+                            md: "#F2F0F1",
+                            lg: "transparent"
+                        }
                     }}
                 >
                     <Typography
                         variant="h2"
-                        width={{ lg: "60%", md: "100%", xs: "100%" }}
+                        width={{ lg: "60%" }}
                         sx={{
                             fontSize: { xs: 40, md: 50, lg: 60 },
                             textTransform: 'uppercase',
                             fontWeight: 900,
-                            textAlign: { xs: 'center', md: 'center', lg: 'left' }
+                            textAlign: { xs: 'center', lg: 'left' }
                         }}
                     >
                         Find Clothes that matches your style
@@ -66,11 +66,11 @@ function Home() {
                     <Typography
                         variant="body1"
                         color="primary"
-                        width={{ lg: "65%", md: "65%", xs: "100%" }}
                         sx={{
                             mt: 3,
                             fontSize: { xs: 11, md: 13, lg: 15 },
-                            textAlign: { xs: 'center', md: 'center', lg: 'left' }
+                            textAlign: { xs: 'center', lg: 'left' },
+                            width: { lg: "65%" }
                         }}
                     >
                         Browse through our diverse range of meticulously crafted garments,
@@ -83,7 +83,7 @@ function Home() {
                         color="secondary"
                         sx={{
                             mt: 5,
-                            alignSelf: { xs: "center", md: "center", lg: "flex-start" },
+                            alignSelf: { xs: "center", lg: "flex-start" },
                             width: { xs: "100%", md: "190px" },
                         }}
                     >
@@ -94,11 +94,12 @@ function Home() {
                         display="flex"
                         gap={4}
                         mt={6}
-                        alignItems={"center"}
-                        justifyContent={{ xs: "center", md: "center", lg: "flex-start" }}
+                        alignItems="center"
+                        justifyContent={{ xs: "center", lg: "flex-start" }}
                         flexWrap="wrap"
-                        width={"100%"}
+                        width="100%"
                     >
+
                         <Box pr={{ sm: 4 }} textAlign={{ xs: "center", md: "left" }} width={{ xs: '100%', sm: 'auto' }}>
                             <Typography variant="h4" sx={{ fontSize: { lg: 40, md: 30, xs: 25 }, fontWeight: 900 }}>
                                 200+
@@ -149,6 +150,7 @@ function Home() {
                         </Box>
                     </Box>
 
+
                     <Box
                         component="img"
                         src={vector1}
@@ -167,7 +169,7 @@ function Home() {
                                 xs: "auto",
                                 lg: "45%"
                             },
-                            display: { xs: 'block', sm: "none", md: 'none', lg: "block" },
+                            display: { xs: 'block', lg: "block" },
                         }}
                     />
                     <Box
@@ -178,59 +180,49 @@ function Home() {
                             position: "absolute",
                             top: { xs: "50%", lg: "15%" },
                             right: "5%",
-                            display: { xs: 'block', sm: "none", md: 'none', lg: "block" },
+                            display: { xs: 'block', lg: "block" },
                         }}
                     />
                 </Box>
+
 
                 <Box
                     component="img"
                     src={Hero2}
                     alt="Hero 2"
                     sx={{
-                        width: { xs: "100%" },
+                        width: "100%",
                         objectFit: 'cover',
-                        display: { xs: 'block', sm: "none", md: 'none', lg: 'none' },
+                        display: { xs: 'block', lg: 'none' },
                     }}
                 />
-                <Box backgroundColor="black" height={120} gap={3} display={"flex"} width={"100%"} flexWrap={"wrap"} alignItems={"center"} justifyContent={"space-evenly"}>
-                    <Box
-                        component="img"
-                        src={versace}
-                        width={150}
-                        height={35}
-                    />
-                    <Box
-                        component="img"
-                        src={zara}
-                        width={110}
-                        height={35}
-                    />
-                    <Box
-                        component="img"
-                        src={gucci}
-                        width={150}
-                        height={35}
-                    />
-                    <Box
-                        component="img"
-                        src={prada}
-                        width={150}
-                        height={35}
-                    />
-                    <Box
-                        component="img"
-                        src={CK}
-                        width={200}
-                        height={35}
-                    />
-                </Box>
-            </Box >
-            <NewArrival/>
-            <Divider variant='middle'sx={{ width: '90%', margin: 'auto' }}/>
-            <TopSellings/>
-            <DressStyle/>
-            <ReviewPage/>
+            </Box>
+
+            <Box
+                backgroundColor="black"
+                height={150}
+                display="flex"
+                width="100%"
+                flexWrap="wrap"
+                alignItems="center"
+                justifyContent="space-evenly"
+                sx={{
+                    mt: { xs: 0, md: 0, lg: -2 },
+                    pt: { xs: 0, md: 0 },
+                }}
+            >
+                <Box component="img" src={versace} width={150} height={35} />
+                <Box component="img" src={zara} width={110} height={35} />
+                <Box component="img" src={gucci} width={150} height={35} />
+                <Box component="img" src={prada} width={150} height={35} />
+                <Box component="img" src={CK} width={200} height={35} />
+            </Box>
+
+            <NewArrival />
+            <Divider variant='middle' sx={{ width: '90%', margin: 'auto' }} />
+            <TopSellings />
+            <DressStyle />
+            <ReviewPage />
         </Box>
     );
 }

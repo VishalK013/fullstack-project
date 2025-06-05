@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { fetchProductById } from '../features/product/ProductSlice'
+import { fetchProductById, fetchProducts } from '../features/product/ProductSlice'
 import { addToCart } from "../features/carts/CartSlice"
 
 import {
@@ -15,6 +15,7 @@ import {
 
 import RemoveIcon from '@mui/icons-material/Remove'
 import AddIcon from '@mui/icons-material/Add'
+import { alignItems } from '@mui/system'
 
 function SinglePageProduct() {
     const { id } = useParams()
@@ -24,6 +25,7 @@ function SinglePageProduct() {
 
     useEffect(() => {
         dispatch(fetchProductById(id))
+        dispatch(fetchProducts())
     }, [dispatch, id])
 
     const handleAddToCart = (product) => {
@@ -32,6 +34,8 @@ function SinglePageProduct() {
 
     const { selectedProduct: product, loading, error } = useSelector(state => state.product)
 
+    const { products: allProducts } = useSelector(state => state.product);
+    const otherProducts = allProducts?.filter(p => p._id !== product?._id);
 
     const increment = () => setQuantity(q => q + 1)
     const decrement = () => setQuantity(q => (q > 1 ? q - 1 : 1))
@@ -107,6 +111,51 @@ function SinglePageProduct() {
                     Add to Cart
                 </Button>
             </Box>
+            <Typography variant="h5" fontWeight={700}  mt={6} mb={0}>
+                Related Products
+            </Typography>
+
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: 2,
+                    justifyContent: 'center', 
+                    alignItems: 'center',
+                    py:10,
+                    backgroundColor: '#f5f5f5',
+                    maxWidth: "100%", 
+                    mx: "auto" 
+                }}
+            >
+
+                {otherProducts?.map(p => (
+                    <Box
+                        key={p._id}
+                        sx={{
+                            border: '1px solid #0000',
+                            borderRadius: 2,
+                            backgroundColor:"white",
+                            width: 300,
+                            p: 2,
+                            textAlign: 'center',
+                            cursor: 'pointer',
+                            '&:hover': { boxShadow: 3 },
+                        }}
+                        onClick={() => window.location.href = `/product/${p._id}`}
+                    >
+                        <Box
+                            component="img"
+                            src={`http://localhost:5000${p.image}`}
+                            alt={p.name}
+                            sx={{ width: '100%', height: 160, objectFit: 'contain', mb: 1 }}
+                        />
+                        <Typography variant="subtitle1">{p.name}</Typography>
+                        <Typography variant="body2" color="text.secondary">${p.price}</Typography>
+                    </Box>
+                ))}
+            </Box>
+
         </Box>
     )
 }

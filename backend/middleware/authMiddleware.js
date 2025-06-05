@@ -27,11 +27,9 @@ exports.verifyToken = async (req, res, next) => {
   }
 };
 
-exports.verifyAdmin = async (req, res, next) => {
-  await exports.verifyToken(req, res, async () => {
-    if (req.user.role !== "admin") {
-      return res.status(403).json({ error: "Access denied. Admins only." });
-    }
-    next();
-  });
+exports.verifyAdmin = (req, res, next) => {
+  if (req.user.role !== "admin") {
+    return res.status(403).json({ error: "Access denied. Admins only." });
+  }
+  next();
 };

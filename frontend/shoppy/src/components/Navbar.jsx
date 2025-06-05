@@ -54,7 +54,8 @@ function Navbar() {
 
   return (
     <Box>
-      {bannerVisible && (
+
+      {!user && bannerVisible && (
         <Typography
           variant="body2"
           color="primary"
@@ -83,6 +84,7 @@ function Navbar() {
           </IconButton>
         </Typography>
       )}
+
 
       <AppBar position="static" color="default" elevation={1} sx={{ px: { xs: 0, sm: 0, md: 2, lg: 3 } }}>
         <Toolbar sx={{ justifyContent: 'space-between', alignItems: "center" }}>
@@ -136,8 +138,8 @@ function Navbar() {
             </Paper>
 
             <IconButton component={Link} to="/cart" aria-label="cart">
-              <Badge badgeContent={quantity}  color="primary">
-                <ShoppingCartOutlinedIcon  sx={{fontSize:{xs:20}}} />
+              <Badge badgeContent={quantity} color="primary">
+                <ShoppingCartOutlinedIcon sx={{ fontSize: { xs: 20 } }} />
               </Badge>
             </IconButton>
 
@@ -154,8 +156,8 @@ function Navbar() {
                     textTransform: 'none',
                     backgroundColor: "red",
                     fontWeight: 'bold',
-                    p:1,
-                    fontSize: { xs: 6, sm: 10 , md: 12},
+                    p: 1,
+                    fontSize: { xs: 6, sm: 10, md: 12 },
                     width: { xs: 50, sm: 80, md: 100 },
                     ml: 1,
                   }}

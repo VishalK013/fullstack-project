@@ -1,11 +1,10 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
-import { baseURL } from "../../common/util";
+import api from "../../api/Api";
 
 export const fetchProducts = createAsyncThunk("products/fetch", async (_, { rejectWithValue }) => {
     try {
-        const res = await axios.get(`${baseURL}/products`);
-        return res.data;
+        const res = await api.get(`/products`);
+        return res;
     } catch (error) {
         return rejectWithValue(error.response?.data || "Failed to fetch products");
     }
@@ -13,8 +12,8 @@ export const fetchProducts = createAsyncThunk("products/fetch", async (_, { reje
 
 export const fetchProductById = createAsyncThunk("product/fetchById", async (id, { rejectWithValue }) => {
     try {
-        const response = await axios.get(`${baseURL}/api/products/${id}`)
-        return response.data;
+        const response = await api.get(`/products/${id}`)
+        return response;
     } catch (error) {
         return rejectWithValue(error.response?.data || "Failed to fetch products");
     }
@@ -22,8 +21,8 @@ export const fetchProductById = createAsyncThunk("product/fetchById", async (id,
 
 export const fetchNewArrivals = createAsyncThunk("newProduct/fetch", async (_, { rejectWithValue }) => {
     try {
-        const res = await axios.get(`${baseURL}/products/new-arrivals`);
-        return res.data
+        const res = await api.get(`/products/new-arrivals`);
+        return res
     } catch (error) {
         return rejectWithValue(error.response?.data || "Failed to fetch new products")
     }
@@ -31,8 +30,8 @@ export const fetchNewArrivals = createAsyncThunk("newProduct/fetch", async (_, {
 
 export const topSellings = createAsyncThunk("topSellings/fetch", async (_, { rejectWithValue }) => {
     try {
-        const res = await axios.get(`${baseURL}/products/top-sellings`);
-        return res.data
+        const res = await api.get(`/products/top-sellings`);
+        return res
     } catch (error) {
         return rejectWithValue(error.response?.data || "Failed to fetch top selling product")
     }
@@ -42,7 +41,7 @@ export const addProduct = createAsyncThunk('products/addProducts',
     async (formData, { rejectWithValue }) => {
         try {
 
-            const response = await axios.post(`${baseURL}/products/add`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+            const response = await api.post(`/products/add`, formData, {});
             return response.data;
 
         } catch (err) {
@@ -62,17 +61,10 @@ export const editProduct = createAsyncThunk("product/editProduct", async ({ id, 
         });
 
 
-        const response = await axios.put(
-            `${baseURL}/products/${id}`,
-            formData,
-            {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            }
+        const response = await api.put(`/products/${id}`, formData, {}
         );
 
-        return response.data;
+        return response;
 
     } catch (error) {
         return rejectWithValue(error.response?.data || error.message);
@@ -82,8 +74,8 @@ export const editProduct = createAsyncThunk("product/editProduct", async ({ id, 
 export const deleteProduct = createAsyncThunk("product/deleteProduct", async (id, { rejectWithValue }) => {
     try {
 
-        const response = await axios.delete(`${baseURL}/products/${id}`)
-        return response.data;
+        const response = await api.delete(`/products/${id}`)
+        return response;
 
     } catch (error) {
 
@@ -178,8 +170,9 @@ const productSlice = createSlice({
                 state.error = null;
             })
             .addCase(editProduct.fulfilled, (state, action) => {
+                console.log('Updated product payload:', action.payload);
                 state.loading = false;
-                const index = state.products.findIndex(p => p._id === action.payload._id);
+                const index = state.products.findIndex(p => p && p._id === action.payload?._id);
                 if (index !== -1) {
                     state.products[index] = action.payload;
                 }

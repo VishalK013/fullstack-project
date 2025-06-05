@@ -6,38 +6,51 @@ const JWT_SECRET = process.env.JWT_SECRET || "Viking001";
 
 
 exports.registerUser = async (req, res) => {
-    const { username, email, password, role } = req.body;
+  const { username, email, password, role } = req.body;
 
-    if (!username || !email || !password) {
-        return res.status(400).json({ error: "All fields are required!" });
+  if (!username || !email || !password) {
+    return res.status(400).json({ error: "All fields are required!" });
+  }
+
+  try {
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return res.status(409).json({ error: "Email already registered!" });
     }
 
-    try {
-        const existingUser = await User.findOne({ email });
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-        if (existingUser) {
-            return res.status(409).json({ error: "Email already registered!" });
-        }
+    const newUser = new User({
+      username,
+      email,
+      password: hashedPassword,
+      role,
+    });
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+    const token = jwt.sign(
+      { id: newUser._id, email: newUser.email, role: newUser.role },
+      JWT_SECRET,
+      { expiresIn: "1h" }
+    );
 
-        const newUser = new User({ username, email, password: hashedPassword, role });
-        await newUser.save();//Save data in databse!
+    await newUser.save();
 
-        return res.status(201).json({
-            user: {
-                id: newUser._id,
-                username: newUser.username,
-                email: newUser.email,
-            },
-            message: "User registered successfully"
-        });
-
-    } catch (error) {
-        console.error("Register error:", error);
-        return res.status(500).json({ error: "Server error", details: error.message });
-    }
+    return res.status(201).json({
+      user: {
+        id: newUser._id,
+        username: newUser.username,
+        email: newUser.email,
+      },
+      token,
+      message: "User registered successfully",
+    });
+  } catch (error) {
+    console.error("Register error:", error);
+    return res.status(500).json({ error: "Server error", details: error.message });
+  }
 };
+
 
 exports.getAllUsers = async (req, res) => {
     try {

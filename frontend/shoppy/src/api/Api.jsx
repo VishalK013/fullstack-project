@@ -1,6 +1,7 @@
 import axios from "axios";
 import momentTz from "moment-timezone"
 import { baseURL } from "../common/util";
+import { handleLogOut } from "./LogOutHandler";
 
 export const AccessToken = {
     get() {
@@ -30,6 +31,19 @@ export const instance = axios.create({
 function get(url, paramObj = {}, headers = {}) {
 
     instance.defaults.headers.common["Authorization"] = `Bearer ${AccessToken.get()}`;
+
+    instance.interceptors.response.use(
+        (response) => response,
+        (error) => {
+            if (error.response?.status === 401) {
+                handleLogOut();
+
+                window.location.href = "/login";
+            }
+
+            return Promise.reject(error)
+        }
+    )
 
     return instance
         .get(url, { params: paramObj })
@@ -72,43 +86,31 @@ function get(url, paramObj = {}, headers = {}) {
         });
 }
 
-function post(url, paramObj, token) {
-
-    instance.defaults.headers.common["Authorization"] = `Bearer ${AccessToken.get()}`;
-    console.log("shipping : ",paramObj)
-    if (token) {
-        instance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    }
+function post(url, paramObj, token = null) {
+    // Build headers safely
     let headers = {
         "Content-Type": "application/json",
     };
-    // Check if paramObj is FormData and adjust headers if necessary
-    if (paramObj instanceof FormData) {
-        headers["Content-Type"] = "multipart/form-data"; // Set for file uploads
+
+    // Add Authorization header ONLY if token is provided
+    const authToken = token || AccessToken.get();
+    if (authToken) {
+        headers["Authorization"] = `Bearer ${authToken}`;
     }
+
+    if (paramObj instanceof FormData) {
+        headers["Content-Type"] = "multipart/form-data";
+    }
+
     return instance
         .post(url, paramObj, { headers })
         .then((response) => {
-            if (response.hasOwnProperty("status")) {
-                return response.data;
-            }
-            return {
-                status: false,
-                message:
-                    response?.message || "Something went to wrong! Try again later",
-            };
-        })
-        .then((response) => {
-            if (response?.success) {
-                return response;
-            } else {
-                return response;
-            }
+            return response.data;
         })
         .catch((error) => {
             return {
                 status: false,
-                message: "Something went to wrong! Try again later",
+                message: error?.response?.data?.error || "Something went wrong! Try again later",
             };
         });
 }
@@ -165,57 +167,53 @@ function update(url, paramObj) {
         });
 }
 
-function put(url, paramObj, headers = {}) {
+function put(url, paramObj, token = null) {
+    let headers = {};
 
-    instance.defaults.headers.common["Authorization"] = `Bearer ${AccessToken.get()}`;
+    const authToken = token || AccessToken.get();
+    if (authToken) {
+        headers["Authorization"] = `Bearer ${authToken}`;
+    }
+
+    // Only set JSON Content-Type if paramObj is NOT FormData
+    if (!(paramObj instanceof FormData)) {
+        headers["Content-Type"] = "application/json";
+    }
 
     return instance
-        .put(url, paramObj)
+        .put(url, paramObj, { headers })
         .then((response) => {
-            if (response.hasOwnProperty("status")) {
-                return response.data;
-            }
-            return {
-                status: false,
-                message:
-                    response?.message || "Something went to wrong! Try again later",
-            };
-        })
-        .then((response) => {
-            if (response?.success) {
-                return response;
-            } else {
-                return response;
-            }
+            return response.data;
         })
         .catch((error) => {
             return {
                 status: false,
-                message: error.message || "Something went to wrong! Try again later",
+                message: error?.response?.data?.error || "Something went wrong! Try again later",
             };
         });
 }
 
+
 function deleteM(url, paramObj) {
-  console.log("API delete called with:", url, paramObj);
+    console.log("API delete called with:", url, paramObj);
 
-  instance.defaults.headers.common["Authorization"] = `Bearer ${AccessToken.get()}`;
+    instance.defaults.headers.common["Authorization"] = `Bearer ${AccessToken.get()}`;
 
-  return instance
-    .delete(url, {
-      data: paramObj,
-      responseType: "json",
-      validateStatus: false,
-    })
-    .then((response) => {
-      console.log("API delete raw response:", response);
-      console.log("API delete response data:", response.data);
-      return response.data; // ✅ Keep this as-is
-    })
-    .catch((error) => {
-      console.error("Delete error:", error.response?.data || error.message);
-      throw error;
-    });
+    return instance
+        .delete(url, {
+            data: paramObj,
+            responseType: "json",
+            validateStatus: false,
+        })
+        .then((response) => {
+            console.log("API delete raw response:", response);
+            console.log("API delete response data:", response.data);
+            return response.data; // ✅ Keep this as-is
+        })
+        .catch((error) => {
+            console.error("Delete error:", error.response?.data || error.message);
+            throw error;
+        });
 }
 
 
@@ -232,7 +230,7 @@ function patch(url, paramObj, token) {
         .then((response) => {
             console.log("Delete API full response:", response);
             return response.data;
-            
+
         })
         .then((response) => {
             if (response.success) {

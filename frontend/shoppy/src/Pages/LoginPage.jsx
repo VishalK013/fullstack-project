@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect } from "react";
 import {
     Box,
     Button,
@@ -12,14 +12,13 @@ import MailOutlineIcon from "@mui/icons-material/MailOutline";
 import LockIcon from "@mui/icons-material/Lock";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser, clearStatus } from "../features/user/UserSlice";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 
 function LoginPage() {
-    const [formData, setFormData] = useState({ email: "", password: "" });
-    const [errors, setErrors] = useState({});
-    const lastEmailRef = useRef("");
     const dispatch = useDispatch();
-    const { error, success, loading, user } = useSelector((state) => state.user);
     const navigate = useNavigate();
+    const { error, success, loading, user } = useSelector((state) => state.user);
 
     useEffect(() => {
         if (success && user) {
@@ -28,46 +27,30 @@ function LoginPage() {
             } else {
                 navigate("/");
             }
-            setFormData({ email: "", password: "" }); 
         }
 
         return () => {
             dispatch(clearStatus());
         };
-    }, [dispatch, success, user, navigate]);
+    }, [success, user, navigate, dispatch]);
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
-        setErrors((prev) => ({ ...prev, [name]: "" }));
-    };
-
-    const validateForm = () => {
-        const newErrors = {};
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-        if (!formData.email.trim()) {
-            newErrors.email = "Email is required";
-        } else if (!emailRegex.test(formData.email)) {
-            newErrors.email = "Enter a valid email";
-        }
-
-        if (!formData.password) {
-            newErrors.password = "Password is required";
-        } else if (formData.password.length < 6) {
-            newErrors.password = "Password must be at least 6 characters";
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if (!validateForm()) return;
-        lastEmailRef.current = formData.email;
-        dispatch(loginUser(formData));
-    };
+    const formik = useFormik({
+        initialValues: {
+            email: "",
+            password: "",
+        },
+        validationSchema: Yup.object({
+            email: Yup.string()
+                .email("Enter a valid email")
+                .required("Email is required"),
+            password: Yup.string()
+                .min(6, "Password must be at least 6 characters")
+                .required("Password is required"),
+        }),
+        onSubmit: (values) => {
+            dispatch(loginUser(values));
+        },
+    });
 
     return (
         <Box
@@ -75,6 +58,8 @@ function LoginPage() {
                 height: "100%",
                 width: "100%",
                 display: "flex",
+                flexDirection:"column",
+                gap:8,
                 alignItems: "center",
                 justifyContent: "center",
                 bgcolor: "background.default",
@@ -82,12 +67,13 @@ function LoginPage() {
                 pt: "10%",
             }}
         >
+            <Typography variant="h3" fontWeight={900} color="initial">Shop.co</Typography>
             <Paper
                 component="form"
-                onSubmit={handleSubmit}
+                onSubmit={formik.handleSubmit}
                 elevation={3}
                 sx={{
-                    width: 400,
+                    width: 500,
                     p: 4,
                     borderRadius: 5,
                     display: "flex",
@@ -103,19 +89,21 @@ function LoginPage() {
                     Sign in
                 </Typography>
 
+                {/* Email Field */}
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, width: "100%" }}>
                     <MailOutlineIcon color="action" sx={{ fontSize: 27 }} />
                     <TextField
                         label="Email"
                         name="email"
                         type="email"
-                        value={formData.email}
                         fullWidth
                         size="small"
                         placeholder="Enter your email"
-                        onChange={handleChange}
-                        error={Boolean(errors.email)}
-                        helperText={errors.email}
+                        value={formik.values.email}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={formik.touched.email && Boolean(formik.errors.email)}
+                        helperText={formik.touched.email && formik.errors.email}
                         autoComplete="email"
                         FormHelperTextProps={{
                             sx: {
@@ -129,25 +117,25 @@ function LoginPage() {
                         }}
                         sx={{
                             backgroundColor: "#edebeb",
-                            "& .MuiOutlinedInput-notchedOutline": { border: "none" },
-                            position: "relative",
                         }}
                     />
                 </Box>
 
+                {/* Password Field */}
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, width: "100%" }}>
                     <LockIcon color="action" sx={{ fontSize: 27 }} />
                     <TextField
                         label="Password"
                         name="password"
                         type="password"
-                        value={formData.password}
                         fullWidth
                         size="small"
                         placeholder="Enter your password"
-                        onChange={handleChange}
-                        error={Boolean(errors.password)}
-                        helperText={errors.password}
+                        value={formik.values.password}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={formik.touched.password && Boolean(formik.errors.password)}
+                        helperText={formik.touched.password && formik.errors.password}
                         autoComplete="current-password"
                         FormHelperTextProps={{
                             sx: {
@@ -161,8 +149,6 @@ function LoginPage() {
                         }}
                         sx={{
                             backgroundColor: "#edebeb",
-                            "& .MuiOutlinedInput-notchedOutline": { border: "none" },
-                            position: "relative",
                         }}
                     />
                 </Box>

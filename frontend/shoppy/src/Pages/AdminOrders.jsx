@@ -60,7 +60,7 @@ const AdminOrders = () => {
                                         Shipping Address : {order.shippingAddress}
                                     </Typography>
                                     <Typography variant="body2" >
-                                        Total: ₹{order.totalAmount}
+                                        Total: $ {order.totalAmount}
                                     </Typography>
 
                                     <Box mt={2}>

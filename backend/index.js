@@ -4,7 +4,6 @@ const path = require("path");
 const cors = require("cors");
 
 const { connectToMongo } = require("./config/connection");
-const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const productRoutes = require("./routes/productRoutes");
 const cartRoutes = require("./routes/cartRoute");
@@ -25,7 +24,6 @@ app.get("/", (req, res) => {
 });
 
 
-app.use('/api/users', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
