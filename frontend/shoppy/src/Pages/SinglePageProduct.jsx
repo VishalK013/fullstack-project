@@ -16,6 +16,7 @@ import {
 import RemoveIcon from '@mui/icons-material/Remove'
 import AddIcon from '@mui/icons-material/Add'
 import { alignItems } from '@mui/system'
+import { toast } from 'react-toastify'
 
 function SinglePageProduct() {
     const { id } = useParams()
@@ -29,7 +30,10 @@ function SinglePageProduct() {
     }, [dispatch, id])
 
     const handleAddToCart = (product) => {
-        dispatch(addToCart({ productId: product._id, quantity }));
+        toast.success("Product added to cart!", { autoClose: 1500 })
+        setTimeout(() => {
+            dispatch(addToCart({ productId: product._id, quantity }));
+        }, 1000);
     }
 
     const { selectedProduct: product, loading, error } = useSelector(state => state.product)
@@ -111,7 +115,7 @@ function SinglePageProduct() {
                     Add to Cart
                 </Button>
             </Box>
-            <Typography variant="h5" fontWeight={700}  mt={6} mb={0}>
+            <Typography variant="h5" fontWeight={700} mt={6} mb={0}>
                 Related Products
             </Typography>
 
@@ -120,12 +124,12 @@ function SinglePageProduct() {
                     display: 'flex',
                     flexWrap: 'wrap',
                     gap: 2,
-                    justifyContent: 'center', 
+                    justifyContent: 'center',
                     alignItems: 'center',
-                    py:10,
+                    py: 10,
                     backgroundColor: '#f5f5f5',
-                    maxWidth: "100%", 
-                    mx: "auto" 
+                    maxWidth: "100%",
+                    mx: "auto"
                 }}
             >
 
@@ -135,7 +139,7 @@ function SinglePageProduct() {
                         sx={{
                             border: '1px solid #0000',
                             borderRadius: 2,
-                            backgroundColor:"white",
+                            backgroundColor: "white",
                             width: 300,
                             p: 2,
                             textAlign: 'center',

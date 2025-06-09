@@ -1,7 +1,8 @@
 import axios from "axios";
-import momentTz from "moment-timezone"
+import momentTz from "moment-timezone";
 import { baseURL } from "../common/util";
 import { handleLogOut } from "./LogOutHandler";
+
 
 export const AccessToken = {
     get() {
@@ -15,8 +16,9 @@ export const AccessToken = {
     },
 };
 
+export const isAuthenticated = () => !!AccessToken.get();
 
-
+// Axios instance
 export const instance = axios.create({
     baseURL,
     timeout: 90000,
@@ -28,25 +30,42 @@ export const instance = axios.create({
     },
 });
 
-function get(url, paramObj = {}, headers = {}) {
+// Interceptors both request and response
+instance.interceptors.request.use((config) => {
+    const token = AccessToken.get();
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
 
-    instance.defaults.headers.common["Authorization"] = `Bearer ${AccessToken.get()}`;
+    const baseUrl = config.baseURL || "";
+    const url = new URL(config.url, baseUrl);
 
-    instance.interceptors.response.use(
-        (response) => response,
-        (error) => {
-            if (error.response?.status === 401) {
-                handleLogOut();
+    if (config.params) {
+        const queryString = new URLSearchParams(config.params).toString();
+        url.search = queryString;
+    }
 
-                window.location.href = "/login";
-            }
+    console.log("📡 Axios Request URL:", url.toString());
+    console.log("📦 Headers:", config.headers);
 
-            return Promise.reject(error)
+    return config;
+});
+
+instance.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response?.status === 401) {
+            handleLogOut();
+            window.location.href = "/login";
         }
-    )
+        return Promise.reject(error);
+    }
+);
 
+// GET
+function get(url, paramObj = {}, headers = {}) {
     return instance
-        .get(url, { params: paramObj })
+        .get(url, { params: paramObj, headers })
         .then((response) => {
             if (response.status === 200 || response.status === 201) {
                 return response.data;
@@ -54,7 +73,6 @@ function get(url, paramObj = {}, headers = {}) {
                 return {
                     ...response.data,
                     status: false,
-                    response_status: response.status,
                     unauthenticated: true,
                     redirect_to_login: true,
                 };
@@ -71,134 +89,89 @@ function get(url, paramObj = {}, headers = {}) {
                 redirect_to_login: true,
             };
         })
-        .then((response) => {
-            if (response.success) {
-                return response;
-            } else {
-                return response;
-            }
-        })
+        .then((response) => response)
         .catch((error) => {
-            return {
-                status: false,
-                message: error.message || "Something went wrong! Try again later",
-            };
+            const message = error?.response?.data?.message || error?.message || "An error occurred. Please try again.";
+            const err = new Error(message);
+            err.response = error.response;
+            throw err;
         });
 }
 
+// POST
 function post(url, paramObj, token = null) {
-    // Build headers safely
-    let headers = {
-        "Content-Type": "application/json",
-    };
-
-    // Add Authorization header ONLY if token is provided
+    let headers = { "Content-Type": "application/json" };
     const authToken = token || AccessToken.get();
-    if (authToken) {
-        headers["Authorization"] = `Bearer ${authToken}`;
-    }
-
-    if (paramObj instanceof FormData) {
-        headers["Content-Type"] = "multipart/form-data";
-    }
+    if (authToken) headers["Authorization"] = `Bearer ${authToken}`;
+    if (paramObj instanceof FormData) headers["Content-Type"] = "multipart/form-data";
 
     return instance
         .post(url, paramObj, { headers })
         .then((response) => {
-            return response.data;
+            if (response.status === 200 || response.status === 201) {
+                return response.data;
+            } else {
+                const error = new Error(response?.data?.message || response?.statusText || "Request failed");
+                error.response = response;
+                throw error;
+            }
         })
         .catch((error) => {
-            return {
-                status: false,
-                message: error?.response?.data?.error || "Something went wrong! Try again later",
-            };
+            const message = error?.response?.data?.message || error?.message || "An error occurred. Please try again.";
+            const err = new Error(message);
+            err.response = error.response;
+            throw err;
         });
 }
 
 function update(url, paramObj) {
-
-    instance.defaults.headers.common["Authorization"] = `Bearer ${AccessToken.get()}`;
-
     return instance
         .put(url, paramObj)
         .then((response) => {
-            if (response.hasOwnProperty("status")) {
-                switch (response.status) {
-                    case 200:
-                        return { success: true, data: response.data };
-                    case 201:
-                        return { success: true, data: response.data };
-                    case 401:
-                        return { success: false, unauthenticated: true };
-                    case 422:
-                        return {
-                            success: false,
-                            data: response.data,
-                        };
-                    default:
-                        return { success: false, message: response };
-                }
-            }
-            return {
-                status: false,
-                message:
-                    response?.message || "Something went to wrong! Try again later",
-            };
-        })
-        .then((response) => {
-            if (response?.success) {
-                return {
-                    ...(response?.data || {}),
-                    success: true,
-                };
-            } else {
-                return {
-                    ...(response?.data || {}),
-                    success: false,
-                };
+            switch (response.status) {
+                case 200:
+                case 201:
+                    return { success: true, data: response.data };
+                case 401:
+                    return { success: false, unauthenticated: true };
+                case 422:
+                    return { success: false, data: response.data };
+                default:
+                    return { success: false, message: response };
             }
         })
+        .then((response) => ({
+            ...(response?.data || {}),
+            success: response?.success || false,
+        }))
         .catch((error) => {
-            const { message } = error;
-            return {
-                status: false,
-                message,
-            };
+            const message = error?.response?.data?.message || error?.message || "An error occurred. Please try again.";
+            const err = new Error(message);
+            err.response = error.response;
+            throw err;
         });
 }
 
+// PUT 
 function put(url, paramObj, token = null) {
     let headers = {};
-
     const authToken = token || AccessToken.get();
-    if (authToken) {
-        headers["Authorization"] = `Bearer ${authToken}`;
-    }
-
-    // Only set JSON Content-Type if paramObj is NOT FormData
-    if (!(paramObj instanceof FormData)) {
-        headers["Content-Type"] = "application/json";
-    }
+    if (authToken) headers["Authorization"] = `Bearer ${authToken}`;
+    if (!(paramObj instanceof FormData)) headers["Content-Type"] = "application/json";
 
     return instance
         .put(url, paramObj, { headers })
-        .then((response) => {
-            return response.data;
-        })
+        .then((response) => response.data)
         .catch((error) => {
-            return {
-                status: false,
-                message: error?.response?.data?.error || "Something went wrong! Try again later",
-            };
+            const message = error?.response?.data?.message || error?.message || "An error occurred. Please try again.";
+            const err = new Error(message);
+            err.response = error.response;
+            throw err;
         });
 }
 
-
+// DELETE
 function deleteM(url, paramObj) {
-    console.log("API delete called with:", url, paramObj);
-
-    instance.defaults.headers.common["Authorization"] = `Bearer ${AccessToken.get()}`;
-
     return instance
         .delete(url, {
             data: paramObj,
@@ -206,9 +179,8 @@ function deleteM(url, paramObj) {
             validateStatus: false,
         })
         .then((response) => {
-            console.log("API delete raw response:", response);
-            console.log("API delete response data:", response.data);
-            return response.data; // ✅ Keep this as-is
+            console.log("🗑️ Delete API response:", response);
+            return response.data;
         })
         .catch((error) => {
             console.error("Delete error:", error.response?.data || error.message);
@@ -216,37 +188,28 @@ function deleteM(url, paramObj) {
         });
 }
 
-
-
+// PATCH
 function patch(url, paramObj, token) {
-    instance.defaults.headers.common[
-        "Authorization"
-    ] = `Bearer ${AccessToken.get()}`;
     if (token) {
         instance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     }
+
     return instance
         .patch(url, paramObj)
         .then((response) => {
-            console.log("Delete API full response:", response);
+            console.log("🩹 Patch API response:", response);
             return response.data;
-
         })
-        .then((response) => {
-            if (response.success) {
-                return response;
-            } else {
-                return response;
-            }
-        })
+        .then((response) => response)
         .catch((error) => {
-            return {
-                status: false,
-                message: error.message || "Something went to wrong! Try again later",
-            };
+            const message = error?.response?.data?.message || error?.message || "An error occurred. Please try again.";
+            const err = new Error(message);
+            err.response = error.response;
+            throw err;
         });
 }
 
+// Export
 export default {
     instance,
     get,

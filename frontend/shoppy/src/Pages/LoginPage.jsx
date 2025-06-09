@@ -14,27 +14,17 @@ import { useDispatch, useSelector } from "react-redux";
 import { loginUser, clearStatus } from "../features/user/UserSlice";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { toast } from "react-toastify";
+
 
 function LoginPage() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { error, success, loading, user } = useSelector((state) => state.user);
-
-    useEffect(() => {
-        if (success && user) {
-            if (user.role === "admin") {
-                navigate("/admin");
-            } else {
-                navigate("/");
-            }
-        }
-
-        return () => {
-            dispatch(clearStatus());
-        };
-    }, [success, user, navigate, dispatch]);
+    console.log("Redux user state:", { error, success, loading, user });
 
     const formik = useFormik({
+        validateOnMount: true,
         initialValues: {
             email: "",
             password: "",
@@ -52,14 +42,51 @@ function LoginPage() {
         },
     });
 
+    useEffect(() => {
+        if (success && user) {
+            toast.success("Login successful! Redirecting...", {
+                position: "top-center",
+                autoClose: 2000,
+            });
+
+            const redirectPath = user.role === "admin" ? "/admin" : "/";
+
+            const timer = setTimeout(() => {
+                navigate(redirectPath);
+            }, 2000);
+
+            return () => {
+                clearTimeout(timer);
+                dispatch(clearStatus());
+            };
+        }
+    }, [success, user, navigate, dispatch]);
+
+    useEffect(() => {
+        if (error) {
+             console.log("Login error:", error);
+            toast.error(error, {
+                position: "top-center",
+                autoClose: 2000,
+                onClose: () => dispatch(clearStatus()),
+            });
+        }
+    }, [error, dispatch]);
+
+    useEffect(() => {
+        if (error) {
+            dispatch(clearStatus());
+        }
+    }, [formik.values, dispatch]);
+
     return (
         <Box
             sx={{
                 height: "100%",
                 width: "100%",
                 display: "flex",
-                flexDirection:"column",
-                gap:8,
+                flexDirection: "column",
+                gap: 8,
                 alignItems: "center",
                 justifyContent: "center",
                 bgcolor: "background.default",
@@ -89,7 +116,6 @@ function LoginPage() {
                     Sign in
                 </Typography>
 
-                {/* Email Field */}
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, width: "100%" }}>
                     <MailOutlineIcon color="action" sx={{ fontSize: 27 }} />
                     <TextField
@@ -105,23 +131,9 @@ function LoginPage() {
                         error={formik.touched.email && Boolean(formik.errors.email)}
                         helperText={formik.touched.email && formik.errors.email}
                         autoComplete="email"
-                        FormHelperTextProps={{
-                            sx: {
-                                right: 0,
-                                top: "20%",
-                                fontSize: "0.75rem",
-                                color: "error.main",
-                                width: "auto",
-                                position: "absolute",
-                            },
-                        }}
-                        sx={{
-                            backgroundColor: "#edebeb",
-                        }}
                     />
                 </Box>
 
-                {/* Password Field */}
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, width: "100%" }}>
                     <LockIcon color="action" sx={{ fontSize: 27 }} />
                     <TextField
@@ -137,19 +149,6 @@ function LoginPage() {
                         error={formik.touched.password && Boolean(formik.errors.password)}
                         helperText={formik.touched.password && formik.errors.password}
                         autoComplete="current-password"
-                        FormHelperTextProps={{
-                            sx: {
-                                right: 0,
-                                top: "20%",
-                                fontSize: "0.75rem",
-                                color: "error.main",
-                                width: "auto",
-                                position: "absolute",
-                            },
-                        }}
-                        sx={{
-                            backgroundColor: "#edebeb",
-                        }}
                     />
                 </Box>
 

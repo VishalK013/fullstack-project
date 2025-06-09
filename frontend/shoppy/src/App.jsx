@@ -16,6 +16,11 @@ import SinglePageProduct from './Pages/SinglePageProduct';
 import CartPage from './Pages/CartPage';
 import { useDispatch } from 'react-redux';
 import { checkTokenExpiration } from "./features/user/UserSlice"
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import Footer from './Pages/Footer';
+import Category from './Pages/Category';
+
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -24,12 +29,14 @@ const AppRoutes = () => {
 
   return (
     <>
-      {!hideNavbar && <Navbar />}
+      <ToastContainer position="top-center" autoClose={3000} />
 
+      {!hideNavbar && <Navbar />}
       <Routes>
         <Route path='/' element={<HomePage />} />
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path='/products' element={<Category />}></Route>
         <Route
           path="/admin"
           element={
@@ -58,6 +65,8 @@ const AppRoutes = () => {
         <Route path='/cart' element={<CartPage />}></Route>
         <Route path='/unauthorized' element={<UnauthorizedPage />}></Route>
       </Routes>
+
+      {!hideNavbar && <Footer />}
     </>
   );
 };
@@ -75,6 +84,7 @@ function App() {
   }, [dispatch]);
 
   return (
+
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Router>

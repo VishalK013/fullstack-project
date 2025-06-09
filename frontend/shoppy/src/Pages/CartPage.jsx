@@ -17,10 +17,13 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { addToCart, removeFromCart, clearCart } from "../features/carts/CartSlice";
+import { addToCart, removeFromCart, clearCart, getCart, incrementGuestQuantity, decrementGuestQuantity } from "../features/carts/CartSlice";
 import { postOrder } from "../features/order/OrderSlice";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { isAuthenticated } from "../api/Api";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 
 const CartItem = React.memo(({ item, onIncrement, onDecrement, onRemove, isMobile }) => (
@@ -46,6 +49,27 @@ const CartItem = React.memo(({ item, onIncrement, onDecrement, onRemove, isMobil
         />
         <Box>
             <Typography variant="h6" py={isMobile ? 1 : 0}>{item.product?.name || item.name}</Typography>
+            {item.product?.colors?.length > 0 && item.color ? (
+                <Box display="flex" alignItems="center" gap={1}>
+                    <Typography variant="body2">Color:</Typography>
+                    {item.product.colors.map((color, index) => (
+                        <Box
+                            key={index}
+                            sx={{
+                                width: 20,
+                                height: 20,
+                                borderRadius: "50%",
+                                backgroundColor: color,
+                                border: item.color === color ? "2px solid black" : "1px solid #ccc",
+                                cursor: "pointer"
+                            }}
+                        />
+                    ))}
+                </Box>
+            ) : (
+                <Typography variant="caption">Color: N/A</Typography>
+            )}
+
             <Typography color="text.secondary" pb={isMobile ? 1 : 0} textAlign={"center"}>
                 Price: ${item.product?.price?.toFixed(2) || item.price?.toFixed(2) || "0.00"}
             </Typography>
@@ -85,13 +109,26 @@ const CartPage = () => {
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
     useEffect(() => {
+        dispatch(getCart());
+    }, [dispatch]);
+
+
+    useEffect(() => {
         if (orderConfirmation) {
             dispatch(clearCart());
             setOpenCheckout(false);
         }
     }, [orderConfirmation, dispatch]);
 
-    const handleCheckout = () => setOpenCheckout(true);
+    const navigate = useNavigate();
+
+    const handleCheckout = () => {
+        if (isAuthenticated()) {
+            setOpenCheckout(true);
+        } else {
+            navigate("/login");
+        }
+    };
 
     const formik = useFormik({
         initialValues: {
@@ -143,14 +180,37 @@ const CartPage = () => {
                         key={item._id}
                         item={item}
                         isMobile={isMobile}
-                        onIncrement={() =>
-                            dispatch(addToCart({ productId: item.product?._id || item.product, quantity: 1 }))
-                        }
-                        onDecrement={() =>
-                            item.quantity > 1 &&
-                            dispatch(addToCart({ productId: item.product?._id || item.product, quantity: -1 }))
-                        }
-                        onRemove={() => dispatch(removeFromCart(item.product?._id || item.product))}
+                        onIncrement={() => {
+                            if (isAuthenticated()) {
+                                dispatch(addToCart({ productId: item.product?._id || item.product, quantity: 1 }));
+                            } else {
+                                dispatch(incrementGuestQuantity(item.product?._id || item.product));
+                            }
+                        }}
+
+                        onDecrement={() => {
+                            if (isAuthenticated()) {
+                                if (item.quantity > 1) {
+                                    dispatch(addToCart({ productId: item.product?._id || item.product, quantity: -1 }));
+                                }
+                            } else {
+                                dispatch(decrementGuestQuantity(item.product?._id || item.product));
+                            }
+                        }}
+                        onRemove={() => {
+                            if (isAuthenticated()) {
+                                toast.error("Product is Removed ! ", { autoClose: 1000 })
+                                setTimeout(() => {
+                                    dispatch(removeFromCart(item.product?._id || item.product));
+                                }, 1000)
+                            } else {
+                                toast.error("Product is Removed ! ", { autoClose: 1000 })
+                                setTimeout(() => {
+                                    dispatch(removeFromCart(item.productId));
+                                }, 1000)
+                            }
+                        }}
+
                     />
                 ))}
             </Box>

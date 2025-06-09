@@ -17,6 +17,7 @@ import { clearStatus, signupUser } from "../features/user/UserSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { toast } from "react-toastify";
 
 const inputRow = {
     display: "flex",
@@ -32,7 +33,18 @@ function SignUpPage() {
     const { loading, success, error } = useSelector((state) => state.user);
 
     useEffect(() => {
-        if (success) navigate("/login");
+        if (success) {
+            toast.success("Signup successful! Redirecting to login...", {
+                position: "top-center",
+                autoClose: 2000,
+            });
+
+            const timer = setTimeout(() => {
+                navigate("/login");
+            }, 2000);
+
+            return () => clearTimeout(timer);
+        }
     }, [success, navigate]);
 
     useEffect(() => {
@@ -63,8 +75,8 @@ function SignUpPage() {
             sx={{
                 height: "100vh",
                 display: "flex",
-                flexDirection:"column",
-                gap:8,
+                flexDirection: "column",
+                gap: 8,
                 justifyContent: "center",
                 alignItems: "center",
                 bgcolor: "background.default",

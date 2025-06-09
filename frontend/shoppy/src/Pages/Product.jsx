@@ -24,6 +24,7 @@ import {
     Typography,
     Dialog,
     Grow,
+    Pagination, // <-- import Pagination here
 } from "@mui/material";
 import { useFormik } from "formik";
 import EditIcon from "@mui/icons-material/Edit";
@@ -36,6 +37,9 @@ const Product = () => {
     const [formDialogOpen, setFormDialogOpen] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [productToDelete, setProductToDelete] = useState(null);
+
+    const [page, setPage] = useState(1);
+    const PRODUCTS_PER_PAGE = 5;
 
     const dispatch = useDispatch();
     const { loading, error, products, addProductSuccess } = useSelector((state) => state.product);
@@ -62,8 +66,11 @@ const Product = () => {
             price: "",
             description: "",
             category: "",
+            clothingType: "",
             rating: "",
             sold: "",
+            colors: "",
+            sizes: "",
             image: null,
         },
         validationSchema: Yup.object({
@@ -71,6 +78,7 @@ const Product = () => {
             price: Yup.number().typeError("Must be a number").positive("Positive only").required(),
             description: Yup.string().required("Required"),
             category: Yup.string().required("Required"),
+            clothingType: Yup.string().required("Clothing type is required"),
             rating: Yup.number().typeError("Must be a number").min(0).max(5).required(),
             sold: Yup.number().typeError("Must be a number").min(0, "Cannot be negative").required("Sold quantity is required"),
             image: Yup.mixed().test("fileType", "Unsupported Format", value => {
@@ -133,6 +141,7 @@ const Product = () => {
             ...product,
             image: `http://localhost:5000${product.image}`,
             sold: product.sold || 0,
+            clothingType: product.clothingType || "",
         });
         setIsEditing(true);
         setEditProductId(product._id);
@@ -153,48 +162,82 @@ const Product = () => {
                         <TableCell><strong>Title</strong></TableCell>
                         <TableCell><strong>Category</strong></TableCell>
                         <TableCell><strong>Price ($)</strong></TableCell>
+                        <TableCell><strong>Colors </strong></TableCell>
                         <TableCell><strong>Actions</strong></TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
-                    {products.map((product, index) => (
-                        <TableRow key={product._id}>
-                            <TableCell>{index + 1}</TableCell>
-                            <TableCell>
-                                <Avatar
-                                    variant="rounded"
-                                    src={`http://localhost:5000${product.image}`}
-                                    loading="lazy"
-                                    alt={product.name}
-                                    sx={{ width: 56, height: 56 }}
-                                />
-                            </TableCell>
-                            <TableCell>
-                                <Typography fontWeight="bold">{product.name}</Typography>
-                            </TableCell>
-                            <TableCell>{product.category}</TableCell>
-                            <TableCell>${product.price}</TableCell>
-                            <TableCell>
-                                <IconButton color="primary" onClick={() => handleEdit(product)}>
-                                    <EditIcon />
-                                </IconButton>
-                                <IconButton color="error" onClick={() => handleDelete(product._id)}>
-                                    <DeleteIcon />
-                                </IconButton>
-                            </TableCell>
-                        </TableRow>
-                    ))}
+                    {products
+                        .slice((page - 1) * PRODUCTS_PER_PAGE, page * PRODUCTS_PER_PAGE)
+                        .map((product, index) => (
+                            <TableRow key={product._id}>
+                                <TableCell>{(page - 1) * PRODUCTS_PER_PAGE + index + 1}</TableCell>
+                                <TableCell>
+                                    <Avatar
+                                        variant="rounded"
+                                        src={`http://localhost:5000${product.image}`}
+                                        loading="lazy"
+                                        alt={product.name}
+                                        sx={{ width: 56, height: 56 }}
+                                    />
+                                </TableCell>
+                                <TableCell>
+                                    <Typography fontWeight="bold">{product.name}</Typography>
+                                </TableCell>
+                                <TableCell>{product.category}</TableCell>
+                                <TableCell>${product.price}</TableCell>
+                                <TableCell>
+                                    {Array.isArray(product.colors) && product.colors.length > 0 ? (
+                                        <Box display="flex" justifyContent={"center"} alignItems={"center"} gap={1} flexWrap="wrap">
+                                            {product.colors.map((color, idx) => (
+                                                <Box
+                                                    key={idx}
+                                                    sx={{
+                                                        width: 20,
+                                                        height: 20,
+                                                        borderRadius: "50%",
+                                                        backgroundColor: color,
+                                                        border: "1px solid #ccc",
+                                                    }}
+                                                />
+                                            ))}
+                                        </Box>
+                                    ) : (
+                                        <Typography variant="body2" textAlign={"center"} fontWeight={700} color="#808080">
+                                            Not Available
+                                        </Typography>
+                                    )}
+                                </TableCell>
+                                <TableCell>
+                                    <IconButton color="primary" onClick={() => handleEdit(product)}>
+                                        <EditIcon />
+                                    </IconButton>
+                                    <IconButton color="error" onClick={() => handleDelete(product._id)}>
+                                        <DeleteIcon />
+                                    </IconButton>
+                                </TableCell>
+                            </TableRow>
+                        ))}
                 </TableBody>
             </Table>
-        </TableContainer>
-
-    ), [products]);
+        </TableContainer >
+    ), [products, page]);
 
     return (
         <Box width="100%" py={4} px={{ xs: 2, sm: 4, md: 10 }} textAlign="right">
             <Button variant="contained" onClick={openForm}>Add Product</Button>
 
             <Box mt={2}>{renderedProducts}</Box>
+
+            <Box mt={3} display="flex" justifyContent="center">
+                <Pagination
+                    count={Math.ceil(products.length / PRODUCTS_PER_PAGE)}
+                    page={page}
+                    onChange={(e, value) => setPage(value)}
+                    color="primary"
+                    shape="rounded"
+                />
+            </Box>
 
             <Dialog open={formDialogOpen} onClose={() => setFormDialogOpen(false)} TransitionComponent={Grow}
                 PaperProps={{ sx: { borderRadius: 4, padding: 3 } }}>
@@ -204,7 +247,7 @@ const Product = () => {
                         {isEditing ? "Edit Product" : "Add New Product"}
                     </Typography>
 
-                    {["name", "price", "description", "category", "rating", "sold"].map((field) => (
+                    {["name", "price", "description", "category", "clothingType", "rating", "sold", "colors", "sizes"].map((field) => (
                         <TextField
                             key={field}
                             label={field.charAt(0).toUpperCase() + field.slice(1)}
@@ -268,3 +311,4 @@ const Product = () => {
 };
 
 export default Product;
+    

@@ -4,7 +4,7 @@ const Product = require("../model/productModel");
 exports.addToCart = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { productId, quantity } = req.body;
+        const { productId, quantity ,colors} = req.body;
 
         if (!productId || typeof quantity !== 'number' || quantity === 0) {
             return res.status(400).json({ message: "Product ID and a non-zero quantity are required" });
@@ -27,6 +27,7 @@ exports.addToCart = async (req, res) => {
                     quantity,
                     price,
                     total: itemTotal,
+                    colors,
                     image
                 }]
             });
@@ -49,6 +50,7 @@ exports.addToCart = async (req, res) => {
                     quantity,
                     price,
                     total: itemTotal,
+                    colors,
                     image
                 });
             }
@@ -82,6 +84,7 @@ exports.getCart = async (req, res) => {
             price: item.price,
             quantity: item.quantity,
             total: item.total,
+            colors:item.colors,
             image: item.product.image,
         }));
 
@@ -94,7 +97,8 @@ exports.getCart = async (req, res) => {
 exports.removeFromCart = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { productId } = req.body;
+        const { productId } = req.query;
+        console.log("Received productId from query:", productId);
 
         if (!productId) {
             return res.status(400).json({ message: "Product ID is required to remove item." });
@@ -111,13 +115,11 @@ exports.removeFromCart = async (req, res) => {
             return res.status(404).json({ message: "Product not found in cart." });
         }
 
-        // Remove the item from the cart
         cart.items.splice(itemIndex, 1);
 
         await cart.save();
         await cart.populate('items.product');
 
-        // Format response similar to getCart
         const itemsWithImages = cart.items.map(item => ({
             _id: item._id,
             product: item.product._id,
@@ -125,6 +127,7 @@ exports.removeFromCart = async (req, res) => {
             price: item.price,
             quantity: item.quantity,
             total: item.total,
+            colors:items.colors,
             image: item.product.image,
         }));
 

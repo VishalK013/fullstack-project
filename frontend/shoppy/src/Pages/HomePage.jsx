@@ -13,6 +13,9 @@ import NewArrival from '../components/NewArrival';
 import TopSellings from '../components/TopSellings';
 import DressStyle from '../components/DressStyle';
 import ReviewPage from '../components/ReviewPage';
+import Footer from './Footer';
+import ScrollReveal from '../components/ScrollReveal';
+
 
 function Home() {
     return (
@@ -218,11 +221,11 @@ function Home() {
                 <Box component="img" src={CK} width={200} height={35} />
             </Box>
 
-            <NewArrival />
-            <Divider variant='middle' sx={{ width: '90%', margin: 'auto' }} />
-            <TopSellings />
-            <DressStyle />
-            <ReviewPage />
+            <ScrollReveal><NewArrival /></ScrollReveal>
+            <ScrollReveal><Divider variant='middle' sx={{ width: '90%', margin: 'auto' }} /></ScrollReveal>
+            <ScrollReveal> <TopSellings /></ScrollReveal>
+            <ScrollReveal><DressStyle /></ScrollReveal>
+            <ScrollReveal><ReviewPage /></ScrollReveal>
         </Box>
     );
 }

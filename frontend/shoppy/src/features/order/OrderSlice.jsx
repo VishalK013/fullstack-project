@@ -8,9 +8,7 @@ export const postOrder = createAsyncThunk(
     async (orderData, { getState, rejectWithValue, dispatch }) => {
         try {
             const token = getState().user.token;
-
             const response = await api.post(`/order/place-order`, orderData , token);
-            console.log(response)
             dispatch(clearCart());
 
             return response;
@@ -26,13 +24,7 @@ export const fetchAllOrders = createAsyncThunk(
         try {
 
             const token = getState().user.token;
-            console.log(token)
-
             const response = await api.get("/order/all", {}, { Authorization: `Bearer ${token}` });
-            console.log("Cart API Response:", response);
-
-            console.log(response)
-
             return response.orders;
 
         } catch (error) {

@@ -19,23 +19,29 @@ export const fetchProductById = createAsyncThunk("product/fetchById", async (id,
     }
 })
 
-export const fetchNewArrivals = createAsyncThunk("newProduct/fetch", async (_, { rejectWithValue }) => {
-    try {
-        const res = await api.get(`/products/new-arrivals`);
-        return res
-    } catch (error) {
-        return rejectWithValue(error.response?.data || "Failed to fetch new products")
+export const fetchNewArrivals = createAsyncThunk(
+    'product/fetchNewArrivals',
+    async ({ page, limit }, { rejectWithValue }) => {
+        try {
+            const response = await api.get(`/products/new-arrivals?page=${page}&limit=${limit}`);
+            return response;
+        } catch (error) {
+            return rejectWithValue(error?.response?.data || { message: error.message });
+        }
     }
-})
+);
 
-export const topSellings = createAsyncThunk("topSellings/fetch", async (_, { rejectWithValue }) => {
-    try {
-        const res = await api.get(`/products/top-sellings`);
-        return res
-    } catch (error) {
-        return rejectWithValue(error.response?.data || "Failed to fetch top selling product")
-    }
-})
+
+export const topSellings = createAsyncThunk(
+    "topSellings/fetch",
+    async ({ page = 1, limit = 4 }, { rejectWithValue }) => {
+        try {
+            const res = await api.get(`/products/top-sellings?page=${page}&limit=${limit}`);
+            return res
+        } catch (error) {
+            return rejectWithValue(error.response?.data || "Failed to fetch top selling product")
+        }
+    })
 
 export const addProduct = createAsyncThunk('products/addProducts',
     async (formData, { rejectWithValue }) => {
@@ -95,6 +101,8 @@ const productSlice = createSlice({
         loading: false,
         error: null,
         addProductSuccess: false,
+        page: 1,
+        totalPages: 1,
     },
     reducers: {
 
@@ -133,7 +141,13 @@ const productSlice = createSlice({
             })
             .addCase(fetchNewArrivals.fulfilled, (state, action) => {
                 state.loading = false;
-                state.newArrival = action.payload;
+                const newItems = action.payload || [];
+
+                if (state.page === 1) {
+                    state.newArrival = newItems;
+                } else {
+                    state.newArrival = [...state.newArrival, ...newItems];
+                }
             })
             .addCase(fetchNewArrivals.rejected, (state, action) => {
                 state.loading = false;
@@ -144,7 +158,13 @@ const productSlice = createSlice({
             })
             .addCase(topSellings.fulfilled, (state, action) => {
                 state.loading = false;
-                state.topSelling = action.payload
+                const newItems = action.payload || [];
+
+                if (state.page === 1) {
+                    state.topSelling = newItems;
+                } else {
+                    state.topSelling = [...state.topSelling, ...newItems];
+                }
             })
             .addCase(topSellings.rejected, (state, action) => {
                 state.loading = false;
@@ -170,7 +190,6 @@ const productSlice = createSlice({
                 state.error = null;
             })
             .addCase(editProduct.fulfilled, (state, action) => {
-                console.log('Updated product payload:', action.payload);
                 state.loading = false;
                 const index = state.products.findIndex(p => p && p._id === action.payload?._id);
                 if (index !== -1) {

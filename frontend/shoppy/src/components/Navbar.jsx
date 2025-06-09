@@ -24,6 +24,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logOutUser } from '../features/user/UserSlice';
 import { selectCartQuantity, getCart, clearCart } from '../features/carts/CartSlice';
+import { toast } from 'react-toastify';
 
 function Navbar() {
   const [bannerVisible, setBannerVisible] = useState(true);
@@ -45,13 +46,27 @@ function Navbar() {
   const handleLogout = () => {
     dispatch(logOutUser());
     dispatch(clearCart());
-    navigate("/");
+
+    toast.error("Logged out successfully", {
+      position: "top-center",
+      autoClose: 1000,
+    });
+
+    setTimeout(() => {
+      navigate("/");
+    }, 1000);
   };
 
   const toggleDrawer = (open) => () => {
     setDrawerOpen(open);
   };
 
+  const handleCartClick = () => {
+    toast.success("Redirecting to Cart!", { autoClose: 1500 });
+    setTimeout(() => {
+      navigate("/cart");
+    }, 1000)
+  };
   return (
     <Box>
 
@@ -116,28 +131,7 @@ function Navbar() {
           </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Paper
-              component="form"
-              sx={{
-                display: { xs: "none", sm: "flex", md: "flex", lg: "flex" },
-                alignItems: 'center',
-                px: 1,
-                py: 0.5,
-                borderRadius: 10,
-                width: { xs: 100, sm: 150, md: 300, lg: 500 },
-                backgroundColor: '#F2F0F1',
-              }}
-              elevation={0}
-            >
-              <SearchIcon fontSize="small" sx={{ color: 'gray' }} />
-              <InputBase
-                placeholder="Search"
-                inputProps={{ 'aria-label': 'search' }}
-                sx={{ ml: 1, flex: 1 }}
-              />
-            </Paper>
-
-            <IconButton component={Link} to="/cart" aria-label="cart">
+            <IconButton onClick={handleCartClick} aria-label="cart">
               <Badge badgeContent={quantity} color="primary">
                 <ShoppingCartOutlinedIcon sx={{ fontSize: { xs: 20 } }} />
               </Badge>
@@ -167,20 +161,6 @@ function Navbar() {
               </Box>
             ) : (
               <Box sx={{ display: "flex", gap: 1 }}>
-                <Button
-                  component={Link}
-                  to="/signup"
-                  variant="outlined"
-                  size="small"
-                  sx={{
-                    textTransform: 'none',
-                    fontSize: { xs: 8, sm: 10, md: 12 },
-                    p: 1,
-                    width: { xs: 50, sm: 80, md: 100 },
-                  }}
-                >
-                  Sign Up
-                </Button>
                 <Button
                   component={Link}
                   to="/login"

@@ -1,10 +1,11 @@
 const fs = require('fs');
 const path = require('path');
 const Product = require("../model/productModel");
+const { type } = require('os');
 
 exports.addProduct = async (req, res) => {
     try {
-        const { name, price, description, category, rating, sold } = req.body;
+        const { name, price, description, category, clothingType, rating, sold } = req.body;
 
         if (!name || !price || !description || !category || !rating) {
             return res.status(400).json({ error: "All fields except sold and image are required" });
@@ -30,6 +31,17 @@ exports.addProduct = async (req, res) => {
             return res.status(400).json({ error: "Sold must be a non-negative number" });
         }
 
+        const colors = req.body.colors
+            ? req.body.colors.split(',').map(c => c.trim()).filter(Boolean)
+            : [];
+        const sizes = req.body.sizes
+            ? req.body.sizes.split(',').map(s => s.trim()).filter(Boolean)
+            : [];
+
+        if (sizes.length === 0) {
+            return res.status(400).json({ error: "At least one size is required" });
+        }
+
         const imageUrl = `/uploads/${req.file.filename}`;
 
         const product = new Product({
@@ -37,10 +49,14 @@ exports.addProduct = async (req, res) => {
             price: priceNumber,
             description,
             category,
+            clothingType,
             rating: ratingNumber,
             sold: soldNumber,
             image: imageUrl,
+            colors,
+            sizes,
         });
+        console.log("Parsed colors array:", colors);
 
         await product.save();
 
@@ -66,7 +82,7 @@ exports.editProduct = async (req, res) => {
             product.image = `/uploads/${req.file.filename}`;
         }
 
-        const fields = ["name", "price", "description", "category", "rating", "sold"];
+        const fields = ["name", "price", "description", "category", "clothingType", "rating", "sold"];
         fields.forEach((field) => {
             if (req.body[field] !== undefined) {
                 if (field === "sold") {
@@ -76,6 +92,20 @@ exports.editProduct = async (req, res) => {
                 }
             }
         });
+
+        if (req.body.colors !== undefined) {
+            product.colors = req.body.colors
+                .split(',')
+                .map(c => c.trim())
+                .filter(Boolean);
+        }
+
+        if (req.body.sizes !== undefined) {
+            product.sizes = req.body.sizes
+                .split(',')
+                .map(s => s.trim())
+                .filter(Boolean);
+        }
 
         const updated = await product.save();
         res.status(200).json(updated);
@@ -140,20 +170,33 @@ exports.getProductById = async (req, res) => {
 
 exports.getNewArrivals = async (req, res) => {
     try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 4;
+        const skip = (page - 1) * limit;
+
         const newArrivals = await Product.find()
             .sort({ createdAt: -1 })
-            .limit(4);
+            .skip(skip)
+            .limit(limit);
+
         res.json(newArrivals);
     } catch (error) {
-        res.status(404).json({ message: "Failed to fetch new arrivals", error: error.message })
+        res.status(404).json({ message: "Failed to fetch new arrivals", error: error.message });
     }
-}
+};
+
 
 exports.getTopSellings = async (req, res) => {
     try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 4;
+        const skip = (page - 1) * limit;
+
         const topSellings = await Product.find()
             .sort({ sold: -1 })
-            .limit(4);
+            .skip(skip)
+            .limit(limit);
+
         res.json(topSellings)
     } catch (error) {
         res.status(404).json({ message: "Failed to fetch Top Sellings", error: error.message })

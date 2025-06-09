@@ -1,8 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { baseURL } from "../../common/util";
 import api from "../../api/Api";
 
-const userFromStorage = JSON.parse(localStorage.getItem("user"));
+const userFromStorage = JSON.parse(localStorage.getItem("user") || "null");
 const tokenFromStorage = localStorage.getItem("token");
 
 export const signupUser = createAsyncThunk(
@@ -11,17 +10,12 @@ export const signupUser = createAsyncThunk(
 
         try {
 
-            const response = await api.post(`${baseURL}/users/register`, userdata);
-            return response.data;
+            const response = await api.post(`/users/register`, userdata);
+            return response;
 
-        } catch (err) {
-
-            if (err.response && err.response.data && err.response.data.error) {
-                return rejectWithValue(err.response.data.error);
-            } else {
-                return rejectWithValue("Network error");
-            }
-
+        } catch (error) {
+            const message = error?.response?.data?.message || error?.message || "Login failed. Please try again.";
+            return rejectWithValue(message);
         }
     }
 );
@@ -36,14 +30,9 @@ export const loginUser = createAsyncThunk(
             localStorage.setItem("expiry", Date.now() + response.expiresIn * 1000);
             return response;
 
-        } catch (err) {
-
-            if (err.response && err.response.data && err.response.data.error) {
-                return rejectWithValue(err.response.data.error);
-            } else {
-                return rejectWithValue("Network error");
-            }
-
+        } catch (error) {
+            const message = error?.response?.data?.message || error?.message || "Login failed. Please try again.";
+            return rejectWithValue(message);
         }
     }
 )
@@ -59,11 +48,8 @@ export const fetchUser = createAsyncThunk(
             return response;
 
         } catch (error) {
-            if (error.response && error.response.data.error) {
-                return rejectWithValue(error.response.data.error);
-            } else {
-                return rejectWithValue("Network error");
-            }
+            const message = error?.response?.data?.message || error?.message || "Login failed. Please try again.";
+            return rejectWithValue(message);
         }
     }
 );
@@ -126,7 +112,7 @@ const userSlice = createSlice({
             })
             .addCase(signupUser.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.payload;
+                state.error = action.payload || action.error.message || "Unknown error";
             })
             // Login handlers
             .addCase(loginUser.pending, (state) => {
@@ -145,8 +131,9 @@ const userSlice = createSlice({
             })
 
             .addCase(loginUser.rejected, (state, action) => {
+                console.log("Login rejected action:", action);
                 state.loading = false;
-                state.error = action.payload;
+                state.error = action.payload || action.error.message || "Unknown error";
             })
             //Fetch User
             .addCase(fetchUser.pending, (state) => {
@@ -159,7 +146,7 @@ const userSlice = createSlice({
             })
             .addCase(fetchUser.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.payload;
+                state.error = action.payload || action.error.message || "Unknown error";
             });
     }
 })

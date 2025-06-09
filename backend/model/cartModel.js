@@ -19,6 +19,9 @@ const CartItemSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    colors:{
+        type:String,
+    },
      image: {
         type: String,
         required: true
