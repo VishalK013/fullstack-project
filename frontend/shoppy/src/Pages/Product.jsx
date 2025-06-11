@@ -45,7 +45,7 @@ const Product = () => {
     const { loading, error, products, addProductSuccess } = useSelector((state) => state.product);
 
     useEffect(() => {
-        dispatch(fetchProducts());
+        dispatch(fetchProducts({ page, limit: 1000 }));
     }, [dispatch]);
 
     useEffect(() => {
@@ -311,4 +311,3 @@ const Product = () => {
 };
 
 export default Product;
-    

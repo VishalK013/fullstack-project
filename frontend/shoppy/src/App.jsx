@@ -20,6 +20,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Footer from './Pages/Footer';
 import Category from './Pages/Category';
+import ScrollToTop from './components/ScrollToTop';
 
 
 const AppRoutes = () => {
@@ -30,13 +31,29 @@ const AppRoutes = () => {
   return (
     <>
       <ToastContainer position="top-center" autoClose={3000} />
-
+      <ScrollToTop />
       {!hideNavbar && <Navbar />}
       <Routes>
         <Route path='/' element={<HomePage />} />
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path='/products' element={<Category />}></Route>
+
+        <Route path='/products'
+          element={
+            <ProtectedRoute allowedRoles={["user", "admin"]}>
+              <Category />
+            </ProtectedRoute>
+          }>
+        </Route>
+        <Route path='/products/:id'
+          element={
+            <ProtectedRoute allowedRoles={["user", "admin"]}>
+              <SinglePageProduct />
+            </ProtectedRoute>
+          }>
+        </Route>
+
+
         <Route
           path="/admin"
           element={
@@ -61,7 +78,6 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
-        <Route path='/product/:id' element={<SinglePageProduct />}></Route>
         <Route path='/cart' element={<CartPage />}></Route>
         <Route path='/unauthorized' element={<UnauthorizedPage />}></Route>
       </Routes>

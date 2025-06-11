@@ -13,11 +13,29 @@ import NewArrival from '../components/NewArrival';
 import TopSellings from '../components/TopSellings';
 import DressStyle from '../components/DressStyle';
 import ReviewPage from '../components/ReviewPage';
-import Footer from './Footer';
 import ScrollReveal from '../components/ScrollReveal';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 
 function Home() {
+    const navigate = useNavigate()
+    const user = useSelector((state) => state.user.user);
+    console.log(user)
+
+    const handleClick = () => {
+        if (!user) {
+            toast.error("Please login first!", { autoClose: 1000 });
+            return;
+        }
+
+        toast.success("Redirecting to product page!", { autoClose: 1000 });
+        setTimeout(() => {
+            navigate("/products");
+        }, 1000);
+    };
+
     return (
         <Box>
             <Box
@@ -89,6 +107,7 @@ function Home() {
                             alignSelf: { xs: "center", lg: "flex-start" },
                             width: { xs: "100%", md: "190px" },
                         }}
+                        onClick={handleClick}
                     >
                         Shop Now
                     </Button>

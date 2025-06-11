@@ -53,13 +53,6 @@ function ProductList({
         }
     };
 
-    const handleSinglePageProduct = (product) => {
-        toast.success("Redirecting to Buy Now!", { autoClose: 1500 });
-        setTimeout(() => {
-            navigate(`/product/${product._id}`);
-        }, 1000);
-    };
-
     return (
         <Box px={2} py={4} textAlign={"center"}>
             <Typography variant="h3" fontWeight="900" mt={5} mb={5} gutterBottom>
@@ -92,11 +85,6 @@ function ProductList({
                                     ${product.price}
                                 </Typography>
                                 <Box alignItems={"center"} gap={2} mt={2} display={"flex"} flexDirection={"column"}>
-                                    <Link onClick={() => handleSinglePageProduct(product)}>
-                                        <Button variant="contained" color="primary">
-                                            Buy Now
-                                        </Button>
-                                    </Link>
                                     <Button variant="contained" color="primary" onClick={() => handleAddToCart(product)}>
                                         Add to Cart
                                     </Button>

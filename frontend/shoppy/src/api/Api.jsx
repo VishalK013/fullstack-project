@@ -71,7 +71,7 @@ function get(url, paramObj = {}, headers = {}) {
                 return response.data;
             } else if (response.status === 401) {
                 return {
-                    ...response.data,
+                    ...response,
                     status: false,
                     unauthenticated: true,
                     redirect_to_login: true,

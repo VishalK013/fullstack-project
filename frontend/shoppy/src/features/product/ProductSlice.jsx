@@ -1,14 +1,52 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import api from "../../api/Api";
 
-export const fetchProducts = createAsyncThunk("products/fetch", async (_, { rejectWithValue }) => {
-    try {
-        const res = await api.get(`/products`);
-        return res;
-    } catch (error) {
-        return rejectWithValue(error.response?.data || "Failed to fetch products");
+export const fetchProducts = createAsyncThunk(
+    "products/fetch",
+    async (filters = {}, { getState, rejectWithValue }) => {
+        try {
+            const state = getState().product;
+
+            const params = new URLSearchParams();
+
+            // Filters
+            if (filters.minPrice !== undefined && filters.maxPrice !== undefined) {
+                params.append("minPrice", filters.minPrice);
+                params.append("maxPrice", filters.maxPrice);
+            }
+
+            if (filters.colors?.length) {
+                params.append("colors", filters.colors.join(",").toLowerCase());
+            }
+
+            if (filters.sizes?.length) {
+                params.append("sizes", filters.sizes.join(",").toUpperCase());
+            }
+
+            if (filters.clothingType?.length) {
+                params.append("clothingType", filters.clothingType.join(",").toLowerCase());
+            }
+
+            const skip = filters.skip ?? state.skip ?? 0;
+            const limit = filters.limit ?? state.limit ?? 6;
+
+            params.append("skip", skip);
+            params.append("limit", limit);
+
+            const response = await api.get(`/products?${params.toString()}`);
+
+            return {
+                products: response.products,
+                total: response.total,
+                skip,
+                limit,
+                isLoadMore: filters.skip !== undefined,
+            };
+        } catch (error) {
+            return rejectWithValue(error.response?.data || "Failed to fetch products");
+        }
     }
-});
+);
 
 export const fetchProductById = createAsyncThunk("product/fetchById", async (id, { rejectWithValue }) => {
     try {
@@ -30,6 +68,24 @@ export const fetchNewArrivals = createAsyncThunk(
         }
     }
 );
+
+export const fetchClothingTypes = createAsyncThunk("products/fetchClothingTypes", async (_, { rejectWithValue }) => {
+    try {
+        const response = await api.get(`products/clothing-types`);
+        return response.clothingType;
+    } catch (error) {
+        return rejectWithValue(error.response.data)
+    }
+});
+
+export const fetchColors = createAsyncThunk("products/fetchColors", async (_, { rejectWithValue }) => {
+    try {
+        const response = await api.get(`products/colors`);
+        return response.colors;
+    } catch (error) {
+        return rejectWithValue(error.response.data)
+    }
+})
 
 
 export const topSellings = createAsyncThunk(
@@ -97,18 +153,31 @@ const productSlice = createSlice({
         products: [],
         newArrival: [],
         topSelling: [],
+        clothingType: [],
+        colors: [],
         selectedProduct: null,
         loading: false,
         error: null,
         addProductSuccess: false,
         page: 1,
         totalPages: 1,
+        limit: 6,
+        skip: 0,
+        initialFetchDone: false,
     },
     reducers: {
-
+        updateLimit: (state, action) => {
+            state.limit = action.payload; // Update limit properly
+        },
         resetAddProductSuccess: (state) => {
             state.addProductSuccess = false;
         },
+        resetProductState: (state) => {
+            state.products = [];
+            state.skip = 0;
+            state.loading = false;
+            state.error = null;
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -117,7 +186,22 @@ const productSlice = createSlice({
             })
             .addCase(fetchProducts.fulfilled, (state, action) => {
                 state.loading = false;
-                state.products = action.payload;
+                state.total = action.payload.total;
+
+                // Initial fetch (skip = 0)
+                if (state.skip === 0 && !state.initialFetchDone) {
+                    state.products = action.payload.products;
+                    state.initialFetchDone = true;
+                } else {
+                    // Avoid duplicate products on scroll
+                    const newProductIds = new Set(state.products.map((p) => p._id));
+                    const newProducts = action.payload.products.filter(
+                        (p) => !newProductIds.has(p._id)
+                    );
+                    state.products.push(...newProducts);
+                }
+
+                state.skip += action.payload.products.length;
             })
             .addCase(fetchProducts.rejected, (state, action) => {
                 state.loading = false;
@@ -199,9 +283,30 @@ const productSlice = createSlice({
             .addCase(editProduct.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload || 'Failed to edit product';
+            })
+            .addCase(fetchClothingTypes.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(fetchClothingTypes.fulfilled, (state, action) => {
+                state.loading = false;
+                state.clothingType = action.payload;
+            })
+            .addCase(fetchClothingTypes.rejected, (state, action) => {
+                state.loading = false;
+                state.colors = action.error.message;
+            }).addCase(fetchColors.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(fetchColors.fulfilled, (state, action) => {
+                state.loading = false;
+                state.colors = action.payload;
+            })
+            .addCase(fetchColors.rejected, (state, action) => {
+                state.loading = false;
+                state.colors = action.error.message;
             });
     }
 })
 
-export const { resetAddProductSuccess, } = productSlice.actions;
+export const { resetAddProductSuccess, resetProductState } = productSlice.actions;
 export default productSlice.reducer;

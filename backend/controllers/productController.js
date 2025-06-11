@@ -139,16 +139,64 @@ exports.deleteProduct = async (req, res) => {
 
 exports.getAllProducts = async (req, res) => {
     try {
+        const {
+            minPrice,
+            maxPrice,
+            colors,
+            sizes,
+            clothingType,
+            skip: skipQuery,
+            limit: limitQuery,
+        } = req.query;
 
-        const products = await Product.find();
-        res.status(200).json(products);
+        const filter = {};
 
+
+        if (minPrice && maxPrice) {
+            filter.price = {
+                $gte: Number(minPrice),
+                $lte: Number(maxPrice),
+            };
+        }
+
+        if (colors) {
+            const colorArray = colors.split(',').map(c => c.trim().toLowerCase());
+            filter.colors = { $in: colorArray };
+        }
+
+
+        if (sizes) {
+            const sizeArray = sizes.split(',').map(s => s.trim().toUpperCase());
+            filter.sizes = { $in: sizeArray };
+        }
+
+
+        if (clothingType) {
+            const clothingTypeArray = clothingType.split(',').map(type => type.trim().toLowerCase());
+            filter.clothingType = { $in: clothingTypeArray };
+        }
+
+
+        const skip = parseInt(skipQuery) || 0;
+        const limit = parseInt(limitQuery) || 6;
+
+        const totalProducts = await Product.countDocuments(filter);
+
+        const products = await Product.find(filter)
+            .skip(skip)
+            .limit(limit);
+
+        res.status(200).json({
+            products,
+            total: await Product.countDocuments(filter),
+        });
     } catch (error) {
-
+        console.error("Error fetching products:", error);
         res.status(500).json({ error: "Failed to fetch products" });
-
     }
 };
+
+
 
 exports.getProductById = async (req, res) => {
     try {
@@ -200,5 +248,23 @@ exports.getTopSellings = async (req, res) => {
         res.json(topSellings)
     } catch (error) {
         res.status(404).json({ message: "Failed to fetch Top Sellings", error: error.message })
+    }
+}
+exports.getClothingTypes = async (req, res) => {
+    try {
+        const clothingType = await Product.distinct("clothingType");
+        res.status(200).json({ clothingType });
+    } catch (error) {
+        console.error("Error fetching clothing types:", error);
+        res.status(500).json({ error: "Failed to fetch clothing types" });
+    }
+}
+exports.getColors = async (req, res) => {
+    try {
+        const colors = await Product.distinct("colors");
+        res.status(200).json({ colors })
+    } catch (error) {
+        console.error("Error fetching clothing types:", error);
+        res.status(500).json({ error: "Failed to fetch clothing types" });
     }
 }

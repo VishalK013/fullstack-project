@@ -24,6 +24,7 @@ import * as Yup from "yup";
 import { isAuthenticated } from "../api/Api";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import empty from "../assets/cart.png"
 
 
 const CartItem = React.memo(({ item, onIncrement, onDecrement, onRemove, isMobile }) => (
@@ -86,14 +87,9 @@ const CartItem = React.memo(({ item, onIncrement, onDecrement, onRemove, isMobil
                     <AddIcon />
                 </IconButton>
             </Box>
-            <Button
-                variant="contained"
-                sx={{ backgroundColor: "red" }}
-                startIcon={<DeleteIcon />}
-                onClick={() => onRemove(item.product || item._id)}
-            >
-                Remove
-            </Button>
+            <IconButton sx={{ color: "red" }} onClick={() => onRemove(item.product || item._id)}>
+                <DeleteIcon />
+            </IconButton>
         </Box>
     </Paper>
 ));
@@ -152,8 +148,11 @@ const CartPage = () => {
 
     if (!cartItems || cartItems.length === 0) {
         return (
-            <Box sx={{ p: 4, textAlign: "center" }}>
-                <Typography variant="h6">Your cart is empty</Typography>
+            <Box sx={{ py: 15, textAlign: "center" }}>
+                <Box
+                    component="img"
+                    src={empty}
+                />
             </Box>
         );
     }
