@@ -25,7 +25,6 @@ export const loginUser = createAsyncThunk(
     async (userdata, { rejectWithValue }) => {
 
         try {
-
             const response = await api.post(`/users/login`, userdata);
             localStorage.setItem("expiry", Date.now() + response.expiresIn * 1000);
             return response;
@@ -54,6 +53,20 @@ export const fetchUser = createAsyncThunk(
     }
 );
 
+export const suspendUser = createAsyncThunk(
+    "user/suspendedUsers",
+    async (userId, { rejectWithValue }) => {
+        try {
+            const token = localStorage.getItem("token")
+            const response = await api.put(`/users/${userId}/suspend`, {}, { Authorization: `Bearer ${token}` });
+            console.log("User data", response)
+            return response.user;
+        } catch (error) {
+            const message = error?.response?.data?.message || error?.message || "Login failed. Please try again.";
+            return rejectWithValue(message);
+        }
+    }
+)
 
 const userSlice = createSlice({
     name: "user",
@@ -63,7 +76,7 @@ const userSlice = createSlice({
         users: [],
         loading: false,
         error: null,
-        success: null
+        success: null,
     },
     reducers: {
         clearStatus: (state) => {
@@ -147,7 +160,19 @@ const userSlice = createSlice({
             .addCase(fetchUser.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload || action.error.message || "Unknown error";
-            });
+            })
+            //suspend user
+            .addCase(suspendUser.fulfilled, (state, action) => {
+                state.loading = false
+                const index = state.users.findIndex(user => user._id === action.payload._id);
+                if (index !== -1) {
+                    state.users[index] = action.payload;
+                }
+            })
+            .addCase(suspendUser.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload || action.error.message || "Unknown error";
+            })
     }
 })
 

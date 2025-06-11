@@ -24,6 +24,7 @@ import {
     List,
     ListItem,
     ListItemText,
+    Skeleton,
 } from "@mui/material";
 import TuneIcon from "@mui/icons-material/Tune";
 import FilterListIcon from "@mui/icons-material/FilterList";
@@ -32,7 +33,6 @@ import BreadCrumbsNav from "../components/BreadCrumbsNav";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-
 
 const sizeOptions = ["XS", "S", "M", "L", "XL"];
 const sizeLabels = {
@@ -110,7 +110,7 @@ function Category() {
         const handleScroll = () => {
             const scrollTop = document.documentElement.scrollTop;
             if (
-                window.innerHeight + document.documentElement.scrollTop + 600 >= document.documentElement.scrollHeight &&
+                window.innerHeight + document.documentElement.scrollTop + 500 >= document.documentElement.scrollHeight &&
                 hasMore &&
                 !loading
             ) {
@@ -140,7 +140,6 @@ function Category() {
         setTimeout(() => navigate(`/products/${product._id}`), 1000);
     };
 
-    if (loading && products.length === 0) return <div>Loading products...</div>;
     if (error) return <div>Error: {error}</div>;
 
     return (
@@ -149,13 +148,13 @@ function Category() {
                 <BreadCrumbsNav />
             </Box>
             <Box display="flex" px={3} justifyContent="space-between">
-                <Box width="20%" mt={2}  sx={{ border: "1px solid #ccc", borderRadius: 2, p: 2, height: "fit-content", textAlign: "center" }}>
+
+                <Box width="20%" mt={2} sx={{ border: "1px solid #ccc", borderRadius: 2, p: 2, height: "fit-content", textAlign: "center" }}>
                     <Box display="flex" justifyContent="space-between" alignItems="center">
                         <Typography sx={typoStyle}>Filters</Typography>
                         <TuneIcon sx={{ transform: "rotate(90deg)", color: "grey.600" }} />
                     </Box>
                     <Divider />
-
                     <List>
                         {clothingType.map((type) => (
                             <ListItem key={type} onClick={() => toggleSetItem(clothingTypes, setClothingTypes, type)} sx={{ cursor: "pointer" }}>
@@ -169,9 +168,7 @@ function Category() {
                             </ListItem>
                         ))}
                     </List>
-
                     <Divider />
-
                     <Typography sx={typoStyle} mt={2}>Price</Typography>
                     <Slider
                         value={priceRange}
@@ -183,7 +180,6 @@ function Category() {
                         sx={{ color: "black" }}
                         components={{ ValueLabel: ValueLabelComponent }}
                     />
-
                     <Typography sx={typoStyle}>Colors</Typography>
                     <Box display="flex" gap={2} flexWrap="wrap" justifyContent="center" mt={2} mb={2}>
                         {colors.map((color, id) => (
@@ -217,9 +213,7 @@ function Category() {
                             </Box>
                         ))}
                     </Box>
-
                     <Divider />
-
                     <Typography sx={typoStyle} mt={2}>Size</Typography>
                     <Box display="grid" gridTemplateColumns="repeat(2, 1fr)" gap={1} mt={1} mb={2}>
                         {sizeOptions.map((size) => (
@@ -247,7 +241,6 @@ function Category() {
                             </Button>
                         ))}
                     </Box>
-
                     <Button variant="contained" startIcon={<FilterListIcon />} onClick={applyFilters}>
                         Apply Filter
                     </Button>
@@ -259,54 +252,80 @@ function Category() {
                     </Typography>
                     <Box display="flex" flexWrap="wrap" justifyContent="space-between" rowGap={3}>
                         <AnimatePresence>
-                            {products.map((product) => (
-                                <Grid item key={product._id}>
-                                    <motion.div
-                                        layout
-                                        initial={{ opacity: 0, scale: 0.95 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 0.95 }}
-                                        transition={{ duration: 0.4 }}
-                                    >
-                                        <Card
-                                            sx={{
-                                                height: "100%",
-                                                width: "300px",
-                                                boxShadow: "none",
-                                                border: "none",
-                                                textAlign: "center",
-                                            }}
-                                        >
-                                            <CardMedia
-                                                component="img"
-                                                height="300"
-                                                image={`http://localhost:5000${product.image}`}
-                                                alt={product.name}
-                                                loading="lazy"
-                                                onClick={() => handleSinglePage(product)}
-                                                sx={{ borderRadius: 5, cursor: "pointer" }}
-                                            />
+                            {loading && products.length === 0
+                                ? Array.from({ length: 6 }).map((_, i) => (
+                                    <Grid item key={`skeleton-${i}`}>
+                                        <Card sx={{ width: 300, borderRadius: 3 }}>
+                                            <Skeleton variant="rectangular" width={300} height={300} />
                                             <CardContent>
-                                                <Typography variant="h6" gutterBottom>
-                                                    {product.name}
-                                                </Typography>
-                                                <Box display="flex" alignItems="center" justifyContent="center" gap={1}>
-                                                    <Rating value={product.rating} readOnly precision={0.5} size="medium" />
-                                                    <Typography variant="body2" color="text.secondary">
-                                                        {product.rating}/5
-                                                    </Typography>
-                                                </Box>
-                                                <Typography variant="body2" fontWeight={700} fontSize={22} mt={1}>
-                                                    ${product.price}
-                                                </Typography>
+                                                <Skeleton height={25} width="80%" />
+                                                <Skeleton height={20} width="40%" />
+                                                <Skeleton height={25} width="50%" />
                                             </CardContent>
                                         </Card>
-                                    </motion.div>
-                                </Grid>
-                            ))}
+                                    </Grid>
+                                ))
+                                : products.map((product) => (
+                                    <Grid item key={product._id}>
+                                        <motion.div
+                                            layout
+                                            initial={{ opacity: 0, scale: 0.95 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 0.95 }}
+                                            transition={{ duration: 0.4 }}
+                                        >
+                                            <Card
+                                                sx={{
+                                                    height: "100%",
+                                                    width: "300px",
+                                                    boxShadow: "none",
+                                                    border: "none",
+                                                    textAlign: "center",
+                                                }}
+                                            >
+                                                <CardMedia
+                                                    component="img"
+                                                    height="300"
+                                                    image={`http://localhost:5000${product.image}`}
+                                                    alt={product.name}
+                                                    loading="lazy"
+                                                    onClick={() => handleSinglePage(product)}
+                                                    sx={{ borderRadius: 5, cursor: "pointer" }}
+                                                />
+                                                <CardContent>
+                                                    <Typography variant="h6" gutterBottom>
+                                                        {product.name}
+                                                    </Typography>
+                                                    <Box display="flex" alignItems="center" justifyContent="center" gap={1}>
+                                                        <Rating value={product.rating} readOnly precision={0.5} size="medium" />
+                                                        <Typography variant="body2" color="text.secondary">
+                                                            {product.rating}/5
+                                                        </Typography>
+                                                    </Box>
+                                                    <Typography variant="body2" fontWeight={700} fontSize={22} mt={1}>
+                                                        ${product.price}
+                                                    </Typography>
+                                                </CardContent>
+                                            </Card>
+                                        </motion.div>
+                                    </Grid>
+                                ))}
+                            {products.length > 0 && loading &&
+                                Array.from({ length: 4 }).map((_, i) => (
+                                    <Grid item key={`loading-skeleton-${i}`}>
+                                        <Card sx={{ width: 300, borderRadius: 3 }}>
+                                            <Skeleton variant="rectangular" width={300} height={300} />
+                                            <CardContent>
+                                                <Skeleton height={25} width="80%" />
+                                                <Skeleton height={20} width="40%" />
+                                                <Skeleton height={25} width="50%" />
+                                            </CardContent>
+                                        </Card>
+                                    </Grid>
+                                ))}
                         </AnimatePresence>
                     </Box>
-                    {loading && <Typography mt={3}>Loading more products...</Typography>}
+                    {loading && products.length > 0 && <Typography mt={3}>Loading more products...</Typography>}
                     {!hasMore && !loading && (
                         <Typography mt={3}>You've reached the end!</Typography>
                     )}

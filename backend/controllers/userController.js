@@ -73,13 +73,16 @@ exports.loginUser = async (req, res) => {
     const user = await User.findOne({ email });// we are using email to find the user cause it's unique
 
     if (!user) {
-      return res.status(401).json({ success: false, error: "Invalid email or password" });
+      return res.status(401).json({ message: "User Not Found" });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);//M athcing password
+    if (user.isSuspended) {
+      return res.status(403).json({ message: "Account is suspended. Contact support." });
+    }
 
+    const isMatch = await bcrypt.compare(password, user.password);//Mathcing password
     if (!isMatch) {
-      return res.status(401).json({ success: false, error: "Invalid email or password" });
+      return res.status(401).json({ message: "Invalid email or password" });
     }
 
     const token = jwt.sign(
@@ -103,3 +106,31 @@ exports.loginUser = async (req, res) => {
     return res.status(500).json({ success: false, error: "Server error", details: error.message });
   }
 };
+
+exports.suspendUser = async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.isSuspended = !user.isSuspended;
+    await user.save();
+
+    return res.status(200).json({
+      message: `User ${user.isSuspended ? "suspended" : "unsuspended"} successfully`,
+      user: {
+        username: user.username,
+        _id: user._id,
+        email: user.email,
+        role: user.role,
+        isSuspended: user.isSuspended,
+      },
+    });
+  } catch (error) {
+    console.error("Error in suspendUser:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+}

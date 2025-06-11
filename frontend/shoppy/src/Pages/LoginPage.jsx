@@ -46,14 +46,14 @@ function LoginPage() {
         if (success && user) {
             toast.success("Login successful! Redirecting...", {
                 position: "top-center",
-                autoClose: 2000,
+                autoClose: 1000,
             });
 
             const redirectPath = user.role === "admin" ? "/admin" : "/";
 
             const timer = setTimeout(() => {
                 navigate(redirectPath);
-            }, 2000);
+            }, 1000);
 
             return () => {
                 clearTimeout(timer);
