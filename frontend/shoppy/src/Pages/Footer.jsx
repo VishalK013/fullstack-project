@@ -1,5 +1,5 @@
-import { Box } from '@mui/system';
 import React from 'react';
+import { Box } from '@mui/system';
 import Typography from '@mui/material/Typography';
 import {
   Paper,
@@ -8,12 +8,18 @@ import {
   InputAdornment,
   ListItem,
   List,
+  Divider,
 } from '@mui/material';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import GitHubIcon from '@mui/icons-material/GitHub';
+import visa from "../assets/Visa.png"
+import mastercard from "../assets/Mastercard.png"
+import paypal from "../assets/Paypal.png"
+import applePay from "../assets/Apay.png"
+import gpay from "../assets/Gpay.png"
 
 function Footer() {
   return (
@@ -97,65 +103,126 @@ function Footer() {
         width="100%"
         backgroundColor="#f5f5f5"
         display="flex"
-        flexWrap="wrap"
-        justifyContent="space-between"
-        alignItems="flex-start"
-        py={{ xs: 25, md: 20 }}
+        flexDirection={"column"}
+        pt={{ xs: 25, md: 20 }}
+        pb={{ xs: 15, md: 10 }}
         px={{ xs: 4, sm: 6, md: 10 }}
-        gap={6}
       >
-        <Box sx={{ width: { xs: '100%', sm: '100%', md: '15%' } }}>
-          <Typography variant="h4" color="initial">
-            Shop.co
-          </Typography>
+        <Box
+          display="flex"
+          flexWrap="wrap"
+          justifyContent="space-between"
+          alignItems="flex-start"
+          gap={6}>
+          <Box sx={{ width: { xs: '100%', sm: '100%', md: '15%' } }}>
+            <Typography variant="h4" color="initial">
+              Shop.co
+            </Typography>
+            <Typography
+              variant="body2"
+              color="primary"
+              mt={2}
+              sx={{ width: { xs: '100%', sm: '90%' } }}
+            >
+              We have clothes that suit your style and you’re proud to wear. From women to men.
+            </Typography>
+            <Box display="flex" gap={2} mt={4}>
+              <TwitterIcon fontSize="medium" />
+              <FacebookIcon fontSize="medium" />
+              <InstagramIcon fontSize="medium" />
+              <GitHubIcon fontSize="medium" />
+            </Box>
+          </Box>
+
+          <List sx={{ width: { xs: '100%', sm: '45%', md: '15%' } }}>
+            <ListItem sx={{ fontWeight: 700 }}>Company</ListItem>
+            <ListItem>About</ListItem>
+            <ListItem>Feature</ListItem>
+            <ListItem>Work</ListItem>
+            <ListItem>Career</ListItem>
+          </List>
+
+          <List sx={{ width: { xs: '100%', sm: '45%', md: '15%' } }}>
+            <ListItem sx={{ fontWeight: 700 }}>Help</ListItem>
+            <ListItem>Customer Support</ListItem>
+            <ListItem>Delivery Details</ListItem>
+            <ListItem>Terms & Conditions</ListItem>
+            <ListItem>Privacy Policy</ListItem>
+          </List>
+
+          <List sx={{ width: { xs: '100%', sm: '45%', md: '15%' } }}>
+            <ListItem sx={{ fontWeight: 700 }}>Resources</ListItem>
+            <ListItem>Free eBooks</ListItem>
+            <ListItem>Development Tutorial</ListItem>
+            <ListItem>How to - Blog</ListItem>
+            <ListItem>Youtube Playlist</ListItem>
+          </List>
+
+          <List sx={{ width: { xs: '100%', sm: '45%', md: '15%' } }}>
+            <ListItem sx={{ fontWeight: 700 }}>Links</ListItem>
+            <ListItem>Home</ListItem>
+            <ListItem>Shop</ListItem>
+            <ListItem>Categories</ListItem>
+            <ListItem>Contact</ListItem>
+          </List>
+        </Box>
+        <Divider width="100%" sx={{ mx: "auto", pt: 10 }} />
+        <Box
+          width="100%"
+          display="flex"
+          flexDirection={{ xs: "column", sm: "row" }}
+          alignItems="center"
+          justifyContent="space-between"
+          textAlign={{ xs: "center", sm: "left" }}
+          pt={5}
+          px={{ xs: 2, sm: 4, md: 6 }}
+        >
+          {/* Footer Text */}
           <Typography
             variant="body2"
             color="primary"
-            mt={2}
-            sx={{ width: { xs: '100%', sm: '90%' } }}
+            sx={{
+              fontSize: { xs: "12px", sm: "14px" },
+              mb: { xs: 2, sm: 0 },
+            }}
           >
-            We have clothes that suit your style and you’re proud to wear. From women to men.
+            Shop.co © 2000–2023, All Rights Reserved
           </Typography>
-          <Box display="flex" gap={2} mt={4}>
-            <TwitterIcon fontSize="medium" />
-            <FacebookIcon fontSize="medium" />
-            <InstagramIcon fontSize="medium" />
-            <GitHubIcon fontSize="medium" />
+
+          {/* Payment Logos */}
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent={{ xs: "center", sm: "flex-end" }}
+            gap={1.5}
+            flexWrap="wrap"
+          >
+            {[visa, mastercard, paypal, applePay, gpay].map((src, index) => (
+              <Box
+                key={index}
+                display="flex"
+                alignItems="center"
+                justifyContent="center"
+                width={50}
+                height={30}
+                p={1}
+                borderRadius={1}
+                bgcolor="white"
+                boxShadow={1}
+              >
+                <Box
+                  component="img"
+                  src={src}
+                  alt={`payment-${index}`}
+                  sx={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
+                />
+              </Box>
+            ))}
           </Box>
         </Box>
 
-        <List sx={{ width: { xs: '100%', sm: '45%', md: '15%' } }}>
-          <ListItem sx={{ fontWeight: 700 }}>Company</ListItem>
-          <ListItem>About</ListItem>
-          <ListItem>Feature</ListItem>
-          <ListItem>Work</ListItem>
-          <ListItem>Career</ListItem>
-        </List>
-
-        <List sx={{ width: { xs: '100%', sm: '45%', md: '15%' } }}>
-          <ListItem sx={{ fontWeight: 700 }}>Help</ListItem>
-          <ListItem>Customer Support</ListItem>
-          <ListItem>Delivery Details</ListItem>
-          <ListItem>Terms & Conditions</ListItem>
-          <ListItem>Privacy Policy</ListItem>
-        </List>
-
-        <List sx={{ width: { xs: '100%', sm: '45%', md: '15%' } }}>
-          <ListItem sx={{ fontWeight: 700 }}>Resources</ListItem>
-          <ListItem>Free eBooks</ListItem>
-          <ListItem>Development Tutorial</ListItem>
-          <ListItem>How to - Blog</ListItem>
-          <ListItem>Youtube Playlist</ListItem>
-        </List>
-
-        <List sx={{ width: { xs: '100%', sm: '45%', md: '15%' } }}>
-          <ListItem sx={{ fontWeight: 700 }}>Links</ListItem>
-          <ListItem>Home</ListItem>
-          <ListItem>Shop</ListItem>
-          <ListItem>Categories</ListItem>
-          <ListItem>Contact</ListItem>
-        </List>
       </Box>
+
     </Box>
   );
 }

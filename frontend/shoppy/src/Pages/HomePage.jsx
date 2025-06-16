@@ -22,7 +22,6 @@ import { useSelector } from 'react-redux';
 function Home() {
     const navigate = useNavigate()
     const user = useSelector((state) => state.user.user);
-    console.log(user)
 
     const handleClick = () => {
         if (!user) {

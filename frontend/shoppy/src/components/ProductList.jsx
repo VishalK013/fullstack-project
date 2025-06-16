@@ -13,6 +13,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToCart } from '../features/carts/CartSlice';
+import WishListButton from './WishListButton';
+import { fetchWishList } from '../features/wishlist/WishListSlice';
 
 function ProductList({
     fetchAction,
@@ -32,6 +34,7 @@ function ProductList({
 
     useEffect(() => {
         dispatch(fetchAction({ page: 1, limit }));
+        dispatch(fetchWishList());
     }, [dispatch, fetchAction, limit]);
 
     if (status === 'loading') return <p>{loadingText}</p>;
@@ -61,7 +64,7 @@ function ProductList({
             <Grid container spacing={3} justifyContent={"center"}>
                 {products.map((product) => (
                     <Grid item key={product._id}>
-                        <Card sx={{ height: '100%', width:"300px", boxShadow: 'none', border: 'none', textAlign: "center" }}>
+                        <Card sx={{ height: '100%', width: "300px", boxShadow: 'none', border: 'none', textAlign: "center", position: "relative" }}>
                             <CardMedia
                                 component="img"
                                 height="300"
@@ -71,6 +74,7 @@ function ProductList({
                                 alt={product.name}
                                 sx={{ borderRadius: 5 }}
                             />
+                            <WishListButton productId={product._id} iconSize="small" absolutePosition={true} />
                             <CardContent>
                                 <Typography variant="h6" component="div" gutterBottom>
                                     {product.name}

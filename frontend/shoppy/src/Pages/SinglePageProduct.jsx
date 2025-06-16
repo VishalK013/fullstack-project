@@ -18,6 +18,8 @@ import AddIcon from '@mui/icons-material/Add'
 import { alignItems } from '@mui/system'
 import { toast } from 'react-toastify'
 import BreadCrumbsNav from '../components/BreadCrumbsNav'
+import WishListButton from '../components/WishListButton'
+import { fetchWishList } from '../features/wishlist/WishListSlice'
 
 function SinglePageProduct() {
     const { id } = useParams()
@@ -26,8 +28,9 @@ function SinglePageProduct() {
     const [quantity, setQuantity] = useState(1)
 
     useEffect(() => {
-        dispatch(fetchProductById(id))
-        dispatch(fetchProducts())
+        dispatch(fetchProductById(id));
+        dispatch(fetchProducts());
+        dispatch(fetchWishList());
     }, [dispatch, id])
 
     const handleAddToCart = (product) => {
@@ -145,6 +148,7 @@ function SinglePageProduct() {
                                 width: 300,
                                 p: 2,
                                 textAlign: 'center',
+                                position: "relative",
                                 cursor: 'pointer',
                                 '&:hover': { boxShadow: 3 },
                             }}
@@ -161,6 +165,7 @@ function SinglePageProduct() {
                                 alt={p.name}
                                 sx={{ width: '100%', height: 160, objectFit: 'contain', mb: 1 }}
                             />
+                            <WishListButton productId={product._id} iconSize="small" absolutePosition={true} />
                             <Typography variant="subtitle1">{p.name}</Typography>
                             <Typography variant="body2" color="text.secondary">${p.price}</Typography>
                         </Box>

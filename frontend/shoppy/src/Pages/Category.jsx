@@ -33,6 +33,8 @@ import BreadCrumbsNav from "../components/BreadCrumbsNav";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import WishListButton from "../components/WishListButton";
+import { fetchWishList } from "../features/wishlist/WishListSlice";
 
 const sizeOptions = ["XS", "S", "M", "L", "XL"];
 const sizeLabels = {
@@ -133,6 +135,7 @@ function Category() {
         dispatch(fetchColors());
         dispatch(resetProductState());
         dispatch(fetchProducts(buildFilters(0)));
+        dispatch(fetchWishList());
     }, [dispatch]);
 
     const handleSinglePage = (product) => {
@@ -147,9 +150,9 @@ function Category() {
             <Box mt={3} ml={1}>
                 <BreadCrumbsNav />
             </Box>
-            <Box display="flex" px={3} justifyContent="space-between">
+            <Box display="flex" flexDirection={{ xs: "column", sm: "column", md: "row", lg: "row" }} px={3} justifyContent="space-between">
 
-                <Box width="20%" mt={2} sx={{ border: "1px solid #ccc", borderRadius: 2, p: 2, height: "fit-content", textAlign: "center" }}>
+                <Box width={{ sm: "100%", md: "300px" }} mt={2} sx={{ border: "1px solid #ccc", borderRadius: 2, p: 2, height: "fit-content", textAlign: "center" }}>
                     <Box display="flex" justifyContent="space-between" alignItems="center">
                         <Typography sx={typoStyle}>Filters</Typography>
                         <TuneIcon sx={{ transform: "rotate(90deg)", color: "grey.600" }} />
@@ -246,27 +249,51 @@ function Category() {
                     </Button>
                 </Box>
 
-                <Box display="flex" textAlign={"center"} width="80%" mt={2} px={10} flexDirection="column">
-                    <Typography variant="h4" textAlign={"left"} fontWeight={700} mb={3}>
+                <Box
+                    display="flex"
+                    flexDirection="column"
+                    textAlign="center"
+                    width="100%"
+                    mt={2}
+                    px={{ xs: 1, sm: 2, md: 10 }}
+                >
+                    <Typography
+                        variant="h4"
+                        textAlign={{ xs: "center", md: "left" }}
+                        fontWeight={700}
+                        mb={3}
+                    >
                         Products
                     </Typography>
-                    <Box display="flex" flexWrap="wrap" justifyContent="space-between" rowGap={3}>
+
+                    <Grid
+                        container
+                        spacing={3}
+                        justifyContent={{ xs: "center", md: "space-between" }}
+                    >
                         <AnimatePresence>
                             {loading && products.length === 0
                                 ? Array.from({ length: 6 }).map((_, i) => (
-                                    <Grid item key={`skeleton-${i}`}>
-                                        <Card sx={{ width: 300, borderRadius: 3 }}>
-                                            <Skeleton variant="rectangular" width={300} height={300} />
+                                    <Grid item xs={12} sm={6} md={4} lg={3} key={`skeleton-${i}`}>
+                                        <Card sx={{ width: "100%", maxWidth: 300, mx: "auto", borderRadius: 3 }}>
+                                            <Skeleton
+                                                variant="rectangular"
+                                                width={300}
+                                                height={300}
+                                                sx={{ borderRadius: 5 }}
+                                            />
                                             <CardContent>
-                                                <Skeleton height={25} width="80%" />
-                                                <Skeleton height={20} width="40%" />
-                                                <Skeleton height={25} width="50%" />
+                                                <Box display="flex" flexDirection="column" alignItems="center" gap={1}>
+                                                    <Skeleton height={25} width="80%" />
+                                                    <Skeleton height={20} width="40%" />
+                                                    <Skeleton height={25} width="50%" />
+                                                </Box>
                                             </CardContent>
                                         </Card>
                                     </Grid>
                                 ))
                                 : products.map((product) => (
-                                    <Grid item key={product._id}>
+                                    <Grid item xs={12} sm={6} md={4} lg={3} key={product._id}>
                                         <motion.div
                                             layout
                                             initial={{ opacity: 0, scale: 0.95 }}
@@ -276,22 +303,26 @@ function Category() {
                                         >
                                             <Card
                                                 sx={{
-                                                    height: "100%",
                                                     width: "300px",
+                                                    maxWidth: 300,
+                                                    height: "100%",
+                                                    mx: "auto",
                                                     boxShadow: "none",
                                                     border: "none",
                                                     textAlign: "center",
+                                                    position: "relative"
                                                 }}
                                             >
                                                 <CardMedia
                                                     component="img"
                                                     height="300"
-                                                    image={`http://localhost:5000${product.image}`}
+                                                    image={`http://192.168.1.1:5000${product.image}`}
                                                     alt={product.name}
                                                     loading="lazy"
                                                     onClick={() => handleSinglePage(product)}
                                                     sx={{ borderRadius: 5, cursor: "pointer" }}
                                                 />
+                                                <WishListButton productId={product._id} iconSize="small" absolutePosition={true} />
                                                 <CardContent>
                                                     <Typography variant="h6" gutterBottom>
                                                         {product.name}
@@ -310,11 +341,12 @@ function Category() {
                                         </motion.div>
                                     </Grid>
                                 ))}
+
                             {products.length > 0 && loading &&
                                 Array.from({ length: 4 }).map((_, i) => (
-                                    <Grid item key={`loading-skeleton-${i}`}>
-                                        <Card sx={{ width: 300, borderRadius: 3 }}>
-                                            <Skeleton variant="rectangular" width={300} height={300} />
+                                    <Grid item xs={12} sm={6} md={4} lg={3} key={`loading-skeleton-${i}`}>
+                                        <Card sx={{ width: "100%", maxWidth: 300, mx: "auto", borderRadius: 3 }}>
+                                            <Skeleton variant="rectangular" width="100%" height={300} />
                                             <CardContent>
                                                 <Skeleton height={25} width="80%" />
                                                 <Skeleton height={20} width="40%" />
@@ -324,12 +356,16 @@ function Category() {
                                     </Grid>
                                 ))}
                         </AnimatePresence>
-                    </Box>
-                    {loading && products.length > 0 && <Typography mt={3}>Loading more products...</Typography>}
+                    </Grid>
+
+                    {loading && products.length > 0 && (
+                        <Typography mt={3}>Loading more products...</Typography>
+                    )}
                     {!hasMore && !loading && (
                         <Typography mt={3}>You've reached the end!</Typography>
                     )}
                 </Box>
+
             </Box>
         </Box>
     );

@@ -139,7 +139,7 @@ const Product = () => {
     const handleEdit = (product) => {
         formik.setValues({
             ...product,
-            image: `http://localhost:5000${product.image}`,
+            image: `http://192.168.1.1:5000${product.image}`,
             sold: product.sold || 0,
             clothingType: product.clothingType || "",
         });
@@ -175,7 +175,7 @@ const Product = () => {
                                 <TableCell>
                                     <Avatar
                                         variant="rounded"
-                                        src={`http://localhost:5000${product.image}`}
+                                        src={`http://192.168.1.1:5000${product.image}`}
                                         loading="lazy"
                                         alt={product.name}
                                         sx={{ width: 56, height: 56 }}

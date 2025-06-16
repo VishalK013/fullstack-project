@@ -5,13 +5,16 @@ import { useEffect } from "react";
 
 const ScrollReveal = ({ children, delay = 0.2, direction = "up" }) => {
     const controls = useAnimation();
-    const [ref, inView] = useInView({ triggerOnce: false, threshold: 0.2 });
+    const [ref, inView] = useInView({
+        triggerOnce: false,
+        threshold: 0.1, // More sensitive to visibility
+    });
 
     const variants = {
         hidden: {
             opacity: 0,
-            y: direction === "up" ? 40 : direction === "down" ? -40 : 0,
-            x: direction === "left" ? 40 : direction === "right" ? -40 : 0,
+            y: direction === "up" ? 20 : direction === "down" ? -20 : 0,
+            x: direction === "left" ? 20 : direction === "right" ? -20 : 0,
         },
         visible: {
             opacity: 1,
@@ -28,9 +31,8 @@ const ScrollReveal = ({ children, delay = 0.2, direction = "up" }) => {
     useEffect(() => {
         if (inView) {
             controls.start("visible");
-        }
-        else {
-            controls.start("hidden"); 
+        } else {
+            controls.start("hidden");
         }
     }, [controls, inView]);
 
@@ -40,10 +42,12 @@ const ScrollReveal = ({ children, delay = 0.2, direction = "up" }) => {
             initial="hidden"
             animate={controls}
             variants={variants}
+            style={{ width: "100%" }} // optional for layout consistency
         >
             {children}
         </motion.div>
     );
 };
+
 
 export default ScrollReveal;

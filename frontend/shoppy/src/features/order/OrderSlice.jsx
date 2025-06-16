@@ -5,10 +5,9 @@ import { clearCart } from "../carts/CartSlice";
 
 export const postOrder = createAsyncThunk(
     "order/postOrder",
-    async (orderData, { getState, rejectWithValue, dispatch }) => {
+    async (orderData, { rejectWithValue, dispatch }) => {
         try {
-            const token = getState().user.token;
-            const response = await api.post(`/order/place-order`, orderData , token);
+            const response = await api.post(`/order/place-order`, orderData);
             dispatch(clearCart());
 
             return response;
@@ -20,11 +19,10 @@ export const postOrder = createAsyncThunk(
 
 export const fetchAllOrders = createAsyncThunk(
     "order/fetchAll",
-    async (_, { getState, rejectWithValue }) => {
+    async (_, { rejectWithValue }) => {
         try {
 
-            const token = getState().user.token;
-            const response = await api.get("/order/all", {}, { Authorization: `Bearer ${token}` });
+            const response = await api.get("/order/all");
             return response.orders;
 
         } catch (error) {
@@ -33,11 +31,57 @@ export const fetchAllOrders = createAsyncThunk(
     }
 )
 
+export const fetchAllOrderCount = createAsyncThunk(
+    'orders/fetchAllOrderCount',
+    async (_, { rejectWithValue }) => {
+        try {
+
+            const response = await api.get('order/count-all');
+            return response.count;
+
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || error.message);
+        }
+    }
+);
+
+export const fetchUserOrder = createAsyncThunk(
+    "order/fetchUserOrder",
+    async (_, { rejectWithValue }) => {
+        try {
+
+            const response = await api.get(`order/my`);
+            localStorage.setItem("userOrders", JSON.stringify(response.orders));
+            return response.orders;
+
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || error.message);
+        }
+    }
+)
+
+export const fetchOrderCount = createAsyncThunk(
+    'orders/fetchOrderCount',
+    async (_, { rejectWithValue }) => {
+        try {
+
+            const response = await api.get('order/count');
+            return response.count;
+
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || error.message);
+        }
+    }
+);
+
 
 const orderSlice = createSlice({
     name: "orders",
     initialState: {
         orders: [],
+        userOrder: JSON.parse(localStorage.getItem("userOrders")) || [],
+        orderCount: 0,
+        allOrderCount: 0,
         loading: false,
         error: null,
         orderConfirmation: null,
@@ -69,6 +113,27 @@ const orderSlice = createSlice({
             .addCase(postOrder.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
+            })
+            //All orders
+            .addCase(fetchAllOrderCount.fulfilled, (state, action) => {
+                state.allOrderCount = action.payload;
+            })
+            //User orders
+            .addCase(fetchUserOrder.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchUserOrder.fulfilled, (state, action) => {
+                state.loading = false;
+                state.userOrder = action.payload;
+            })
+            .addCase(fetchUserOrder.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            //Order count
+            .addCase(fetchOrderCount.fulfilled, (state, action) => {
+                state.orderCount = action.payload;
             });
     }
 })

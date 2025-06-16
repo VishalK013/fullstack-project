@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
-import Products from "./Product"
+import Products from "./Product";
+import UserList from "./UserList";
+import AdminOrders from "./AdminOrders";
 import {
   Box, Paper, Typography, Grid, CircularProgress, Button,
   Drawer, List, ListItem, ListItemIcon, ListItemText,
@@ -8,47 +10,78 @@ import {
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import PeopleIcon from "@mui/icons-material/People";
 import StorefrontIcon from "@mui/icons-material/Storefront";
-import InboxIcon from "@mui/icons-material/Inbox";
-import MailIcon from "@mui/icons-material/Mail";
 import LogoutIcon from "@mui/icons-material/Logout";
-import { useDispatch } from "react-redux";
-import { logOutUser } from "../features/user/UserSlice";
-import UserList from "./UserList";
-import AdminOrders from "./AdminOrders";
+
+import { useDispatch, useSelector } from "react-redux";
+import { fetchUserCount, logOutUser } from "../features/user/UserSlice";
+import { fetchAllOrderCount } from "../features/order/OrderSlice";
+import { fetchAllProductCount } from "../features/product/ProductSlice";
 
 const drawerWidth = 240;
 
 function AdminPage() {
-  const [stats, setStats] = useState({
-    totalProducts: 0,
-    totalOrders: 0,
-    totalUsers: 0,
-  });
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState(() => {
     return localStorage.getItem("adminActiveSection") || "Dashboard";
   });
 
   const dispatch = useDispatch();
+  const allOrderCount = useSelector((state) => state.orders.allOrderCount);
+  const totalProducts = useSelector((state) => state.product.allProductCount);
+  const totalUsers = useSelector((state) => state.user.userCount);
 
   const handleLogout = () => {
     dispatch(logOutUser());
   };
 
   useEffect(() => {
-    const fetchStats = async () => {
-      setLoading(true);
-      setTimeout(() => {
-        setStats({
-          totalProducts: 125,
-          totalOrders: 320,
-          totalUsers: 54,
-        });
-        setLoading(false);
-      }, 1000);
-    };
-    fetchStats();
-  }, []);
+    dispatch(fetchAllOrderCount()).finally(() => setLoading(false));
+    dispatch(fetchAllProductCount()).finally(() => setLoading(false));
+    dispatch(fetchUserCount()).finally(() => setLoading(false));
+  }, [dispatch]);
+
+  const renderContent = () => {
+    switch (activeSection) {
+      case "Dashboard":
+        return (
+          <Grid container spacing={4} justifyContent="center">
+            <Grid item xs={12} sm={6} md={4}>
+              <Paper elevation={4} sx={cardStyles("#e3f2fd")}>
+                <StorefrontIcon sx={{ fontSize: 50, color: "#1976d2" }} />
+                <StatBox label="Total Products" value={totalProducts} />
+              </Paper>
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <Paper elevation={4} sx={cardStyles("#fff3e0")}>
+                <ShoppingCartIcon sx={{ fontSize: 50, color: "#fb8c00" }} />
+                <StatBox label="Total Orders" value={allOrderCount || 0} />
+              </Paper>
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <Paper elevation={4} sx={cardStyles("#e8f5e9")}>
+                <PeopleIcon sx={{ fontSize: 50, color: "#43a047" }} />
+                <StatBox label="Total Users" value={totalUsers} />
+              </Paper>
+            </Grid>
+          </Grid>
+        );
+      case "Orders":
+        return <AdminOrders />;
+      case "Products":
+        return <Products />;
+      case "Users":
+        return <UserList />;
+      default:
+        return <Typography variant="h6">Select a section</Typography>;
+    }
+  };
+
+  const iconMap = {
+    Dashboard: <StorefrontIcon />,
+    Orders: <ShoppingCartIcon />,
+    Products: <StorefrontIcon />,
+    Users: <PeopleIcon />,
+  };
 
   if (loading) {
     return (
@@ -64,48 +97,18 @@ function AdminPage() {
       </Box>
     );
   }
-  const renderContent = () => {
-    switch (activeSection) {
-      case "Dashboard":
-        return (
-          <Grid container spacing={4} justifyContent="center">
-            <Grid item xs={12} sm={6} md={4}>
-              <Paper elevation={4} sx={cardStyles("#e3f2fd")}>
-                <StorefrontIcon sx={{ fontSize: 50, color: "#1976d2" }} />
-                <StatBox label="Total Products" value={stats.totalProducts} />
-              </Paper>
-            </Grid>
-            <Grid item xs={12} sm={6} md={4}>
-              <Paper elevation={4} sx={cardStyles("#fff3e0")}>
-                <ShoppingCartIcon sx={{ fontSize: 50, color: "#fb8c00" }} />
-                <StatBox label="Total Orders" value={stats.totalOrders} />
-              </Paper>
-            </Grid>
-            <Grid item xs={12} sm={6} md={4}>
-              <Paper elevation={4} sx={cardStyles("#e8f5e9")}>
-                <PeopleIcon sx={{ fontSize: 50, color: "#43a047" }} />
-                <StatBox label="Total Users" value={stats.totalUsers} />
-              </Paper>
-            </Grid>
-          </Grid>
-        );
-      case "Orders":
-        return <Typography variant="h5"><AdminOrders/></Typography>;
-      case "Products":
-        return <Products />;
-      case "Users":
-        return <UserList />;
-      default:
-        return <Typography variant="h6">Select a section</Typography>;
-    }
-  };
 
   return (
     <>
-
-      <AppBar position="fixed" sx={{ backgroundColor: "#212121", zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+      <AppBar
+        position="fixed"
+        sx={{
+          backgroundColor: "#212121",
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+        }}
+      >
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-          <Typography variant="h4" fontWeight="bold" color="primary">
+          <Typography variant="h4" fontWeight="bold" sx={{ color: "white" }}>
             Admin Dashboard
           </Typography>
           <Button
@@ -128,13 +131,13 @@ function AdminPage() {
             [`& .MuiDrawer-paper`]: {
               width: drawerWidth,
               boxSizing: "border-box",
-              bgcolor: "#f5f5f5"
+              bgcolor: "#f5f5f5",
             },
           }}
         >
           <Toolbar />
           <List>
-            {["Dashboard", "Orders", "Products", "Users"].map((text, index) => (
+            {["Dashboard", "Orders", "Products", "Users"].map((text) => (
               <ListItem
                 key={text}
                 selected={activeSection === text}
@@ -142,19 +145,20 @@ function AdminPage() {
                   setActiveSection(text);
                   localStorage.setItem("adminActiveSection", text);
                 }}
-
-                sx={{ cursor: "pointer" }}
+                sx={{
+                  cursor: "pointer",
+                  backgroundColor:
+                    activeSection === text ? "#e0e0e0" : "inherit",
+                }}
               >
-                <ListItemIcon>
-                  {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-                </ListItemIcon>
+                <ListItemIcon>{iconMap[text]}</ListItemIcon>
                 <ListItemText primary={text} />
               </ListItem>
             ))}
           </List>
         </Drawer>
 
-        <Box component="main" sx={{ flexGrow: 1, display: "flex", justifyContent: "center " }} >
+        <Box component="main" sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
           {renderContent()}
         </Box>
       </Box>
@@ -169,7 +173,7 @@ const StatBox = ({ label, value }) => (
   </Box>
 );
 
-const cardStyles = (bgColor,) => ({
+const cardStyles = (bgColor) => ({
   p: 3,
   display: "flex",
   alignItems: "center",

@@ -40,10 +40,8 @@ export const fetchUser = createAsyncThunk(
     "user/fetchUsers",
     async (_, { rejectWithValue }) => {
         try {
-            const token = localStorage.getItem("token");
 
-            const response = await api.get(`/users`, {}, { Authorization: `Bearer ${token}` });
-
+            const response = await api.get(`/users`);
             return response;
 
         } catch (error) {
@@ -53,12 +51,30 @@ export const fetchUser = createAsyncThunk(
     }
 );
 
+export const fetchUserCount = createAsyncThunk(
+    "user/fetchUsersCount",
+    async (_, { rejectWithValue }) => {
+        try {
+
+            const response = await api.get('users/all');
+            return response.count;
+
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || error.message);
+        }
+    }
+)
+
 export const suspendUser = createAsyncThunk(
     "user/suspendedUsers",
     async (userId, { rejectWithValue }) => {
         try {
-            const token = localStorage.getItem("token")
-            const response = await api.put(`/users/${userId}/suspend`, {}, { Authorization: `Bearer ${token}` });
+
+            const headers = {
+                "Content-Type": "multipart/form-data",
+            };
+
+            const response = await api.put(`/users/${userId}/suspend`, {}, headers);
             console.log("User data", response)
             return response.user;
         } catch (error) {
@@ -68,12 +84,33 @@ export const suspendUser = createAsyncThunk(
     }
 )
 
+
+export const updateUserProfile = createAsyncThunk(
+    "user/updateUserProfile",
+    async ({ id, formData }, { rejectWithValue }) => {
+        try {
+            const headers = {
+                "Content-Type": "multipart/form-data",
+            };
+
+            const response = await api.put(`/users/update/${id}`, formData, headers);
+            console.log("updated user", response);
+            return response;
+        } catch (error) {
+            return rejectWithValue(error.message);
+        }
+    }
+);
+
+
+
 const userSlice = createSlice({
     name: "user",
     initialState: {
         user: userFromStorage || null,
         token: tokenFromStorage || null,
         users: [],
+        userCount: 0,
         loading: false,
         error: null,
         success: null,
@@ -161,6 +198,10 @@ const userSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload || action.error.message || "Unknown error";
             })
+            //FetchALlUsers
+            .addCase(fetchUserCount.fulfilled, (state, action) => {
+                state.userCount = action.payload
+            })
             //suspend user
             .addCase(suspendUser.fulfilled, (state, action) => {
                 state.loading = false
@@ -173,6 +214,20 @@ const userSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload || action.error.message || "Unknown error";
             })
+            //Update user profile
+            .addCase(updateUserProfile.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(updateUserProfile.fulfilled, (state, action) => {
+                console.log("action", action.payload)
+                state.user = action.payload;
+                localStorage.setItem("user", JSON.stringify(state.user)); // persist
+            })
+            .addCase(updateUserProfile.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            });
     }
 })
 

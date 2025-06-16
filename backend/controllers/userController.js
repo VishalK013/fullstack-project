@@ -62,6 +62,17 @@ exports.getAllUsers = async (req, res) => {
   }
 };
 
+exports.getAllUserCount = async (req, res) => {
+  try {
+    const count = await User.countDocuments();
+    res.status(200).json({ count: count });
+  } catch (error) {
+    console.error("Error fetching user count:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
 exports.loginUser = async (req, res) => {
   const { email, password } = req.body;
 
@@ -86,7 +97,7 @@ exports.loginUser = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user._id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: "1h" }
+      { id: user._id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: "7d" }
     );
 
     return res.status(200).json({
@@ -95,7 +106,8 @@ exports.loginUser = async (req, res) => {
         id: user._id,
         username: user.username,
         email: user.email,
-        role: user.role
+        role: user.role,
+        image: user.image
       },
       token,
       message: "Login Successful"
@@ -132,5 +144,35 @@ exports.suspendUser = async (req, res) => {
   } catch (error) {
     console.error("Error in suspendUser:", error);
     res.status(500).json({ message: "Server error" });
+  }
+}
+
+exports.updateUserprofile = async (req, res) => {
+  try {
+
+    const userId = req.params.id;
+    const { username, email } = req.body;
+    let profilePic;
+
+    if (req.file) {
+      profilePic = `/uploads/${req.file.filename}`
+    }
+
+    const updateField = {
+      username,
+      email
+    };
+
+    if (profilePic) updateField.image = profilePic
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: updateField },
+      { new: true }
+    )
+    res.json(updatedUser);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
   }
 }

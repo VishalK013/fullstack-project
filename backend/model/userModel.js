@@ -21,6 +21,9 @@ const userSchema = new mongoose.Schema(
         isSuspended: {
             type: Boolean,
             default: false,
+        },
+        image: {
+            type: String
         }
     },
     {

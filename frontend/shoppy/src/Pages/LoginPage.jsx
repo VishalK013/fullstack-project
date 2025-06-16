@@ -21,7 +21,6 @@ function LoginPage() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { error, success, loading, user } = useSelector((state) => state.user);
-    console.log("Redux user state:", { error, success, loading, user });
 
     const formik = useFormik({
         validateOnMount: true,

@@ -58,3 +58,39 @@ exports.getAllOrder = async (req, res) => {
         res.status(500).json({ message: error.message || "Internal server error" });
     }
 };
+
+exports.getAllOrderCount = async (req, res) => {
+    try {
+        const count = await Order.countDocuments(); // counts all orders
+        res.status(200).json({ count });
+    } catch (error) {
+        console.error("All order count fetch error:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+exports.getUsersOrder = async (req, res) => {
+    try {
+
+        const userId = req.user.id;
+
+        const orders = await Order.find({ user: userId })
+            .populate("items.product", "name price image")
+            .sort({ createdAt: -1 });
+
+        res.status(200).json({ orders });
+    } catch (error) {
+        console.error("Get user orders error:", error);
+        res.status(500).json({ message: error.message || "Internal server error" });
+    }
+}
+exports.getUserOrderCount = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const count = await Order.countDocuments({ user: userId });
+        res.status(200).json({ count });
+    } catch (error) {
+        console.error("Order count fetch error:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};

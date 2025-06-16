@@ -48,6 +48,18 @@ export const fetchProducts = createAsyncThunk(
     }
 );
 
+export const fetchAllProductCount = createAsyncThunk(
+    "product/fetchAllProductCount",
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await api.get('products/all');
+            return response.count;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || error.message);
+        }
+    }
+)
+
 export const fetchProductById = createAsyncThunk("product/fetchById", async (id, { rejectWithValue }) => {
     try {
         const response = await api.get(`/products/${id}`)
@@ -163,6 +175,7 @@ const productSlice = createSlice({
         totalPages: 1,
         limit: 6,
         skip: 0,
+        allProductCount: 0,
         initialFetchDone: false,
     },
     reducers: {
@@ -206,6 +219,10 @@ const productSlice = createSlice({
             .addCase(fetchProducts.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
+            })
+            //All Product Count
+            .addCase(fetchAllProductCount.fulfilled, (state, action) => {
+                state.allProductCount = action.payload;
             })
             .addCase(fetchProductById.pending, (state) => {
                 state.loading = true

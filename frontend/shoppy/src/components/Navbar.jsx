@@ -6,8 +6,6 @@ import {
   Box,
   Button,
   IconButton,
-  InputBase,
-  Paper,
   Drawer,
   List,
   ListItem,
@@ -16,15 +14,19 @@ import {
   Badge,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import SearchIcon from '@mui/icons-material/Search';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
+import ListAltIcon from '@mui/icons-material/ListAlt';
 import CloseIcon from '@mui/icons-material/Close';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logOutUser } from '../features/user/UserSlice';
 import { selectCartQuantity, getCart, clearCart } from '../features/carts/CartSlice';
 import { toast } from 'react-toastify';
+import UserAvatar from './UserAvatar';
+import { fetchOrderCount } from '../features/order/OrderSlice';
+import { fetchAllWishListCount } from '../features/wishlist/WishListSlice';
+
 
 function Navbar() {
   const [bannerVisible, setBannerVisible] = useState(true);
@@ -34,24 +36,25 @@ function Navbar() {
   const navigate = useNavigate();
 
   const user = useSelector((state) => state.user.user);
+  const orderCount = useSelector((state) => state.orders.orderCount);
+  const wishlistCount = useSelector((state) => state.wishlist.wishlistCount);
   const quantity = useSelector(selectCartQuantity);
-  console.log("Cart quantity in Navbar:", quantity);
 
   useEffect(() => {
     if (user) {
       dispatch(getCart());
+      dispatch(fetchOrderCount());
+      dispatch(fetchAllWishListCount());
     }
   }, [dispatch, user]);
 
   const handleLogout = () => {
     dispatch(logOutUser());
     dispatch(clearCart());
-
     toast.error("Logged out successfully", {
       position: "top-center",
       autoClose: 1000,
     });
-
     setTimeout(() => {
       navigate("/");
     }, 1000);
@@ -65,11 +68,25 @@ function Navbar() {
     toast.success("Redirecting to Cart!", { autoClose: 1500 });
     setTimeout(() => {
       navigate("/cart");
-    }, 1000)
+    }, 1000);
   };
+
+  const handleOrdersClick = () => {
+    toast.info("Opening your orders...", { autoClose: 1000 });
+    setTimeout(() => {
+      navigate("/orders");
+    }, 1000);
+  };
+
+  const handleWishList = () => {
+    toast.info("Opening wishlist cart...", { autoClose: 1000 })
+    setTimeout(() => {
+      navigate("/wishlist")
+    }, 1000);
+  }
+
   return (
     <Box>
-
       {!user && bannerVisible && (
         <Typography
           variant="body2"
@@ -100,7 +117,6 @@ function Navbar() {
         </Typography>
       )}
 
-
       <AppBar position="static" color="default" elevation={1} sx={{ px: { xs: 0, sm: 0, md: 2, lg: 3 } }}>
         <Toolbar sx={{ justifyContent: 'space-between', alignItems: "center" }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -130,18 +146,32 @@ function Navbar() {
             </Button>
           </Box>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: "center" }}>
             <IconButton onClick={handleCartClick} aria-label="cart">
               <Badge badgeContent={quantity} color="primary">
                 <ShoppingCartOutlinedIcon sx={{ fontSize: { xs: 20 } }} />
               </Badge>
             </IconButton>
 
+            {user && (
+              <IconButton onClick={handleWishList} aria-label="orders">
+                <Badge badgeContent={wishlistCount} color="primary">
+                  <ListAltIcon sx={{ fontSize: { xs: 20 } }} />
+                </Badge>
+              </IconButton>
+            )}
+
+            {user && (
+              <IconButton onClick={handleOrdersClick} aria-label="orders">
+                <Badge badgeContent={orderCount} color="primary">
+                  <ShoppingBagIcon sx={{ fontSize: { xs: 20 } }} />
+                </Badge>
+              </IconButton>
+            )}
+
             {user ? (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Typography sx={{ fontWeight: 600, fontSize: { xs: 8, sm: 10, md: 12, lg: 14 } }}>
-                  Welcome, {user.username}
-                </Typography>
+                <UserAvatar size={30} onClick={() => navigate("/profile")} showIconButton />
                 <Button
                   onClick={handleLogout}
                   variant="contained"
@@ -182,13 +212,7 @@ function Navbar() {
       </AppBar>
 
       <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'flex-start',
-            p: 2,
-          }}
-        >
+        <Box sx={{ display: 'flex', justifyContent: 'flex-start', p: 2 }}>
           <IconButton onClick={toggleDrawer(false)}>
             <CloseIcon />
           </IconButton>

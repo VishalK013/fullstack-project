@@ -1,8 +1,9 @@
 const express = require("express");
 const multer = require("multer");
 const path = require("path");
-const { addProduct, getAllProducts, deleteProduct, editProduct, getNewArrivals, getTopSellings, getProductById, getClothingTypes, getColors } = require("../controllers/productController");
-const uploads = require("../middleware/uploadMiddleware")
+const { addProduct, getAllProducts, deleteProduct, editProduct, getNewArrivals, getTopSellings, getProductById, getClothingTypes, getColors, getAllProductsCount } = require("../controllers/productController");
+const uploads = require("../middleware/uploadMiddleware");
+const { verifyAdmin, verifyToken } = require("../middleware/authMiddleware");
 const router = express.Router();
 
 const storage = multer.diskStorage({
@@ -19,6 +20,7 @@ const upload = multer({ storage });
 
 router.post("/add", upload.single("image"), addProduct);
 router.get("/", getAllProducts);
+router.get("/all", verifyToken, verifyAdmin, getAllProductsCount);
 router.get("/new-arrivals", getNewArrivals)
 router.get("/top-sellings", getTopSellings)
 router.get("/clothing-types", getClothingTypes)

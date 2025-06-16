@@ -153,22 +153,32 @@ function update(url, paramObj) {
 }
 
 // PUT 
-function put(url, paramObj, token = null) {
-    let headers = {};
-    const authToken = token || AccessToken.get();
-    if (authToken) headers["Authorization"] = `Bearer ${authToken}`;
-    if (!(paramObj instanceof FormData)) headers["Content-Type"] = "application/json";
+function put(url, paramObj, customHeaders = {}) {
+    const token = localStorage.getItem("token");
+    const isFormData = paramObj instanceof FormData;
+
+    const headers = {
+        ...(token && { Authorization: `Bearer ${token}` }),
+        ...(isFormData
+            ? { "Content-Type": "multipart/form-data" }
+            : { "Content-Type": "application/json" }),
+        ...customHeaders, // allow override or add more
+    };
 
     return instance
         .put(url, paramObj, { headers })
         .then((response) => response.data)
         .catch((error) => {
-            const message = error?.response?.data?.message || error?.message || "An error occurred. Please try again.";
+            const message =
+                error?.response?.data?.message ||
+                error?.message ||
+                "An error occurred. Please try again.";
             const err = new Error(message);
             err.response = error.response;
             throw err;
         });
 }
+
 
 // DELETE
 function deleteM(url, paramObj) {

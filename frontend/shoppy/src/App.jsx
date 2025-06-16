@@ -21,6 +21,9 @@ import 'react-toastify/dist/ReactToastify.css';
 import Footer from './Pages/Footer';
 import Category from './Pages/Category';
 import ScrollToTop from './components/ScrollToTop';
+import ProfilePage from './Pages/ProfilePage';
+import UserOrder from './Pages/UserOrder';
+import Wishlist from './Pages/Wishlist';
 
 
 const AppRoutes = () => {
@@ -45,6 +48,13 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }>
         </Route>
+        <Route path='/profile'
+          element={
+            <ProtectedRoute allowedRoles={["user", "admin"]}>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        ></Route>
         <Route path='/products/:id'
           element={
             <ProtectedRoute allowedRoles={["user", "admin"]}>
@@ -53,6 +63,21 @@ const AppRoutes = () => {
           }>
         </Route>
 
+        <Route path="/orders"
+          element={
+            <ProtectedRoute allowedRoles={["user", "admin"]}>
+              <UserOrder />
+            </ProtectedRoute>
+          }
+        ></Route>
+
+        <Route path='/wishlist'
+          element={
+            <ProtectedRoute allowedRoles={["user", "admin"]}>
+              <Wishlist />
+            </ProtectedRoute>
+          }
+        ></Route>
 
         <Route
           path="/admin"
