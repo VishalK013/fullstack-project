@@ -74,6 +74,19 @@ export const fetchOrderCount = createAsyncThunk(
     }
 );
 
+export const updateOrderStatus = createAsyncThunk(
+    "orders/updateOrderStatus",
+    async ({ orderId, status }, { rejectWithValue }) => {
+        try {
+
+            await api.put(`order/update-status`, { orderId, status })
+            return { orderId, status };
+
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || "Update failed");
+        }
+    }
+)
 
 const orderSlice = createSlice({
     name: "orders",
@@ -85,8 +98,16 @@ const orderSlice = createSlice({
         loading: false,
         error: null,
         orderConfirmation: null,
+        orderToReview: null,
     },
-    reducers: {},
+    reducers: {
+        setOrderToReview: (state, action) => {
+            state.orderToReview = action.payload;
+        },
+        clearOrderToReview: (state) => {
+            state.orderToReview = null;
+        },
+    },
     extraReducers: (builder) => {
         builder
             .addCase(fetchAllOrders.pending, (state) => {
@@ -134,8 +155,20 @@ const orderSlice = createSlice({
             //Order count
             .addCase(fetchOrderCount.fulfilled, (state, action) => {
                 state.orderCount = action.payload;
+            })
+            //Update Order status
+            .addCase(updateOrderStatus.fulfilled, (state, action) => {
+                state.loading = false;
+                const { orderId, status } = action.payload;
+                const order = state.orders.find((o) => o._id === orderId);
+                if (order) order.status = status;
+            })
+            .addCase(updateOrderStatus.rejected, (state, action) => {
+                state.error = action.payload;
             });
     }
 })
+
+export const { setOrderToReview, clearOrderToReview } = orderSlice.actions;
 
 export default orderSlice.reducer;

@@ -15,7 +15,6 @@ import {
 
 import RemoveIcon from '@mui/icons-material/Remove'
 import AddIcon from '@mui/icons-material/Add'
-import { alignItems } from '@mui/system'
 import { toast } from 'react-toastify'
 import BreadCrumbsNav from '../components/BreadCrumbsNav'
 import WishListButton from '../components/WishListButton'
@@ -165,7 +164,7 @@ function SinglePageProduct() {
                                 alt={p.name}
                                 sx={{ width: '100%', height: 160, objectFit: 'contain', mb: 1 }}
                             />
-                            <WishListButton productId={product._id} iconSize="small" absolutePosition={true} />
+                            <WishListButton productId={p._id} iconSize="small" absolutePosition={true} />
                             <Typography variant="subtitle1">{p.name}</Typography>
                             <Typography variant="body2" color="text.secondary">${p.price}</Typography>
                         </Box>

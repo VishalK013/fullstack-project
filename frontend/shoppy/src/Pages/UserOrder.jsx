@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchUserOrder } from '../features/order/OrderSlice';
+import { fetchUserReviews } from '../features/review/ReviewSlice';
 import {
     Box,
     Typography,
@@ -12,6 +13,9 @@ import {
     Avatar,
     Grid,
 } from '@mui/material';
+import socket from '../Socket';
+import { toast } from 'react-toastify';
+import ReviewModal from '../components/ReviewModal';
 
 const statusColors = {
     Pending: 'warning',
@@ -22,11 +26,89 @@ const statusColors = {
 
 const UserOrder = () => {
     const dispatch = useDispatch();
+    const [reviewProducts, setReviewProducts] = useState([]);
+    const [showReviewModal, setShowReviewModal] = useState(false);
+    const [modalShownOnce, setModalShownOnce] = useState(false);
+
     const { userOrder, loading, error } = useSelector((state) => state.orders);
+    const { reviews } = useSelector((state) => state.review);
 
     useEffect(() => {
+        socket.connect();
+
+        socket.on("order-status-updated", (data) => {
+            toast.info(`Order status updated to ${data.newStatus}`);
+            dispatch(fetchUserOrder());
+        });
+
+        socket.on("order-delivered", ({ orderId }) => {
+            const reviewedProductIds = reviews.map(r =>
+                typeof r.product === 'string' ? r.product : r.product._id
+            );
+
+            const deliveredOrder = userOrder.find(o => o._id === orderId);
+            if (deliveredOrder) {
+                const products = deliveredOrder.items
+                    .filter(item => !reviewedProductIds.includes(item.product._id.toString()))
+                    .map(item => ({
+                        orderId,
+                        productId: item.product._id,
+                        name: item.product.name,
+                        image: item.product.image,
+                        rating: 0,
+                        comment: "",
+                    }));
+
+                if (products.length > 0) {
+                    setReviewProducts(products);
+                    setShowReviewModal(true);
+                }
+            }
+        });
+
         dispatch(fetchUserOrder());
+        dispatch(fetchUserReviews());
+
+        return () => {
+            socket.off("order-status-updated");
+            socket.off("order-delivered");
+            socket.disconnect();
+        };
     }, [dispatch]);
+
+    useEffect(() => {
+        if (modalShownOnce || !userOrder?.length || !reviews?.length) return;
+
+        const reviewedProductIds = reviews.map(r =>
+            typeof r.product === 'string' ? r.product : r.product._id
+        );
+
+        const productsToReview = [];
+
+        userOrder
+            .filter(order => order.status === 'Delivered')
+            .forEach(order => {
+                order.items.forEach(item => {
+                    const productId = item.product._id.toString();
+                    if (!reviewedProductIds.includes(productId)) {
+                        productsToReview.push({
+                            orderId: order._id,
+                            productId,
+                            name: item.product.name,
+                            image: item.product.image,
+                            rating: 0,
+                            comment: "",
+                        });
+                    }
+                });
+            });
+
+        if (productsToReview.length > 0) {
+            setReviewProducts(productsToReview);
+            setShowReviewModal(true);
+            setModalShownOnce(true);
+        }
+    }, [userOrder, reviews, modalShownOnce]);
 
     return (
         <Box sx={{ p: { xs: 2, md: 4 }, backgroundColor: '#f2f2f2', minHeight: '100vh' }}>
@@ -91,6 +173,21 @@ const UserOrder = () => {
                     </CardContent>
                 </Card>
             ))}
+
+            <ReviewModal
+                open={showReviewModal}
+                products={reviewProducts}
+                setProducts={setReviewProducts}
+                onClose={() => {
+                    setShowReviewModal(false);
+                    setReviewProducts([]);
+                }}
+                onSubmit={() => {
+                    toast.success("Thanks for your feedback!");
+                    setShowReviewModal(false);
+                    setReviewProducts([]);
+                }}
+            />
         </Box>
     );
 };

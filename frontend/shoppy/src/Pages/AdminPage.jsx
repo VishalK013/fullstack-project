@@ -16,6 +16,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchUserCount, logOutUser } from "../features/user/UserSlice";
 import { fetchAllOrderCount } from "../features/order/OrderSlice";
 import { fetchAllProductCount } from "../features/product/ProductSlice";
+import ProductSummaryLineChart from "../components/ProductSummaryLineChart";
+import OrderTrendsListChart from "../components/OrderTrendsListChart";
 
 const drawerWidth = 240;
 
@@ -44,26 +46,69 @@ function AdminPage() {
     switch (activeSection) {
       case "Dashboard":
         return (
-          <Grid container spacing={4} justifyContent="center">
-            <Grid item xs={12} sm={6} md={4}>
-              <Paper elevation={4} sx={cardStyles("#e3f2fd")}>
-                <StorefrontIcon sx={{ fontSize: 50, color: "#1976d2" }} />
-                <StatBox label="Total Products" value={totalProducts} />
+          <Grid container my={2} spacing={4} direction="column">
+            <Grid>
+              <Paper
+                elevation={4}
+                sx={{
+                  ...cardStyles("#4A9DE0"),
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  p: 0,
+                  height: 260,
+                }}
+              >
+                <Box width={"200px"} textAlign={"center"} color={"white"}>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Total Products
+                  </Typography>
+                  <Typography variant="h4" fontWeight={700}>
+                    {totalProducts}
+                  </Typography>
+                </Box>
+
+                <Box sx={{ width: "80%", height: "260px", ml: 2, backgroundColor: "white" }}>
+                  <ProductSummaryLineChart mini />
+                </Box>
               </Paper>
             </Grid>
-            <Grid item xs={12} sm={6} md={4}>
-              <Paper elevation={4} sx={cardStyles("#fff3e0")}>
-                <ShoppingCartIcon sx={{ fontSize: 50, color: "#fb8c00" }} />
-                <StatBox label="Total Orders" value={allOrderCount || 0} />
+
+            <Grid>
+              <Paper
+                elevation={4}
+                sx={{
+                  ...cardStyles("#FF9721"),
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  p: 0,
+                  height: 260,
+                }}
+              >
+                <Box width={"200px"} textAlign={"center"} pl={2} color={"white"}>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Total Orders
+                  </Typography>
+                  <Typography variant="h4" fontWeight={700}>
+                    {allOrderCount}
+                  </Typography>
+                </Box>
+
+                <Box sx={{ width: "80%", height: "260px", ml: 2, backgroundColor: "white" }}>
+                  <OrderTrendsListChart mini />
+                </Box>
               </Paper>
             </Grid>
-            <Grid item xs={12} sm={6} md={4}>
+
+            <Grid item xs={12} md={4}>
               <Paper elevation={4} sx={cardStyles("#e8f5e9")}>
                 <PeopleIcon sx={{ fontSize: 50, color: "#43a047" }} />
                 <StatBox label="Total Users" value={totalUsers} />
               </Paper>
             </Grid>
           </Grid>
+
         );
       case "Orders":
         return <AdminOrders />;

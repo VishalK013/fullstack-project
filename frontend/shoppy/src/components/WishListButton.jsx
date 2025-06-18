@@ -49,7 +49,10 @@ const WishListButton = ({ productId }) => {
 
     return (
         <IconButton
-            onClick={handleToggle}
+            onClick={(e) => {
+                e.stopPropagation(); 
+                handleToggle();
+            }}
             sx={{
                 position: "absolute",
                 top: 10,

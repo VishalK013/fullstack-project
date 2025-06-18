@@ -94,3 +94,47 @@ exports.getUserOrderCount = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
+
+exports.updateOrderStatus = async (req, res) => {
+    try {
+
+        const { orderId, status } = req.body;
+
+        const order = await Order.findById(orderId).populate("user", "_id name")
+
+        if (!order) {
+            return res.status(404).json({ message: "Order not found..." })
+        }
+
+        order.status = status;
+        await order.save();
+
+        const io = req.app.get("io");
+        const onlineUsers = req.app.get("onlineUsers")
+
+        const userId = order.user._id.toString();
+        const socketId = onlineUsers[userId];
+
+        if (socketId) {
+            io.to(socketId).emit("order-status-updated", {
+                orderId: order._id,
+                newStatus: order.status,
+                message: `Your order status was updated to "${status}"`,
+            });
+        }
+
+        if (status === "Delivered") {
+            io.to(socketId).emit("order-delivered", {
+                orderId: order._id,
+                message: `Your order has been delivered! Please review and rate our products`
+            })
+            console.log("Order id ", orderId)
+        }
+
+        res.status(200).json({ message: "Order status updated", order });
+
+    } catch (error) {
+        console.error("Update order status error:", error);
+        res.status(500).json({ message: error.message || "Internal server error" });
+    }
+}
