@@ -1,167 +1,38 @@
-import React, { useEffect, useState } from "react";
-import Products from "./Product";
-import UserList from "./UserList";
-import AdminOrders from "./AdminOrders";
-import {
-  Box, Paper, Typography, Grid, CircularProgress, Button,
-  Drawer, List, ListItem, ListItemIcon, ListItemText,
-  Toolbar, AppBar
-} from "@mui/material";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import PeopleIcon from "@mui/icons-material/People";
-import StorefrontIcon from "@mui/icons-material/Storefront";
+import React from "react";
+import { Box, Button, Drawer, List, ListItem, ListItemIcon, ListItemText, Toolbar, AppBar, Typography } from "@mui/material";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import ReceiptIcon from "@mui/icons-material/Receipt";
+import GroupIcon from "@mui/icons-material/Group";
+import Inventory2Icon from "@mui/icons-material/Inventory2";
 import LogoutIcon from "@mui/icons-material/Logout";
-
-import { useDispatch, useSelector } from "react-redux";
-import { fetchUserCount, logOutUser } from "../features/user/UserSlice";
-import { fetchAllOrderCount } from "../features/order/OrderSlice";
-import { fetchAllProductCount } from "../features/product/ProductSlice";
-import ProductSummaryLineChart from "../components/ProductSummaryLineChart";
-import OrderTrendsListChart from "../components/OrderTrendsListChart";
+import { useNavigate, useLocation, Outlet } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { logOutUser } from "../features/user/UserSlice";
 
 const drawerWidth = 240;
 
-function AdminPage() {
-  const [loading, setLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState(() => {
-    return localStorage.getItem("adminActiveSection") || "Dashboard";
-  });
-
+const AdminPage = () => {
   const dispatch = useDispatch();
-  const allOrderCount = useSelector((state) => state.orders.allOrderCount);
-  const totalProducts = useSelector((state) => state.product.allProductCount);
-  const totalUsers = useSelector((state) => state.user.userCount);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const menuItems = [
+    { text: "Dashboard", icon: <DashboardIcon />, path: "/admin" },
+    { text: "Orders", icon: <ReceiptIcon />, path: "/admin/orders" },
+    { text: "Products", icon: <Inventory2Icon />, path: "/admin/products" },
+    { text: "Users", icon: <GroupIcon />, path: "/admin/users" },
+  ];
 
   const handleLogout = () => {
     dispatch(logOutUser());
   };
-
-  useEffect(() => {
-    dispatch(fetchAllOrderCount()).finally(() => setLoading(false));
-    dispatch(fetchAllProductCount()).finally(() => setLoading(false));
-    dispatch(fetchUserCount()).finally(() => setLoading(false));
-  }, [dispatch]);
-
-  const renderContent = () => {
-    switch (activeSection) {
-      case "Dashboard":
-        return (
-          <Grid container my={2} spacing={4} direction="column">
-            <Grid>
-              <Paper
-                elevation={4}
-                sx={{
-                  ...cardStyles("#4A9DE0"),
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  p: 0,
-                  height: 260,
-                }}
-              >
-                <Box width={"200px"} textAlign={"center"} color={"white"}>
-                  <Typography variant="subtitle1" fontWeight={600}>
-                    Total Products
-                  </Typography>
-                  <Typography variant="h4" fontWeight={700}>
-                    {totalProducts}
-                  </Typography>
-                </Box>
-
-                <Box sx={{ width: "80%", height: "260px", ml: 2, backgroundColor: "white" }}>
-                  <ProductSummaryLineChart mini />
-                </Box>
-              </Paper>
-            </Grid>
-
-            <Grid>
-              <Paper
-                elevation={4}
-                sx={{
-                  ...cardStyles("#FF9721"),
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  p: 0,
-                  height: 260,
-                }}
-              >
-                <Box width={"200px"} textAlign={"center"} pl={2} color={"white"}>
-                  <Typography variant="subtitle1" fontWeight={600}>
-                    Total Orders
-                  </Typography>
-                  <Typography variant="h4" fontWeight={700}>
-                    {allOrderCount}
-                  </Typography>
-                </Box>
-
-                <Box sx={{ width: "80%", height: "260px", ml: 2, backgroundColor: "white" }}>
-                  <OrderTrendsListChart mini />
-                </Box>
-              </Paper>
-            </Grid>
-
-            <Grid item xs={12} md={4}>
-              <Paper elevation={4} sx={cardStyles("#e8f5e9")}>
-                <PeopleIcon sx={{ fontSize: 50, color: "#43a047" }} />
-                <StatBox label="Total Users" value={totalUsers} />
-              </Paper>
-            </Grid>
-          </Grid>
-
-        );
-      case "Orders":
-        return <AdminOrders />;
-      case "Products":
-        return <Products />;
-      case "Users":
-        return <UserList />;
-      default:
-        return <Typography variant="h6">Select a section</Typography>;
-    }
-  };
-
-  const iconMap = {
-    Dashboard: <StorefrontIcon />,
-    Orders: <ShoppingCartIcon />,
-    Products: <StorefrontIcon />,
-    Users: <PeopleIcon />,
-  };
-
-  if (loading) {
-    return (
-      <Box
-        sx={{
-          height: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <CircularProgress />
-      </Box>
-    );
-  }
-
+  
   return (
     <>
-      <AppBar
-        position="fixed"
-        sx={{
-          backgroundColor: "#212121",
-          zIndex: (theme) => theme.zIndex.drawer + 1,
-        }}
-      >
+      <AppBar position="fixed" sx={{ backgroundColor: "#212121", zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-          <Typography variant="h4" fontWeight="bold" sx={{ color: "white" }}>
-            Admin Dashboard
-          </Typography>
-          <Button
-            variant="outlined"
-            onClick={handleLogout}
-            startIcon={<LogoutIcon />}
-            sx={{ backgroundColor: "white" }}
-          >
+          <Typography variant="h4" fontWeight="bold" color="white">Admin Dashboard</Typography>
+          <Button variant="outlined" onClick={handleLogout} startIcon={<LogoutIcon />} sx={{ backgroundColor: "white" }}>
             Logout
           </Button>
         </Toolbar>
@@ -173,7 +44,7 @@ function AdminPage() {
           sx={{
             width: drawerWidth,
             flexShrink: 0,
-            [`& .MuiDrawer-paper`]: {
+            "& .MuiDrawer-paper": {
               width: drawerWidth,
               boxSizing: "border-box",
               bgcolor: "#f5f5f5",
@@ -182,50 +53,29 @@ function AdminPage() {
         >
           <Toolbar />
           <List>
-            {["Dashboard", "Orders", "Products", "Users"].map((text) => (
+            {menuItems.map((item) => (
               <ListItem
-                key={text}
-                selected={activeSection === text}
-                onClick={() => {
-                  setActiveSection(text);
-                  localStorage.setItem("adminActiveSection", text);
-                }}
+                key={item.text}
+                selected={location.pathname === item.path}
+                onClick={() => navigate(item.path)}
                 sx={{
                   cursor: "pointer",
-                  backgroundColor:
-                    activeSection === text ? "#e0e0e0" : "inherit",
+                  backgroundColor: location.pathname === item.path ? "#e0e0e0" : "inherit",
                 }}
               >
-                <ListItemIcon>{iconMap[text]}</ListItemIcon>
-                <ListItemText primary={text} />
+                <ListItemIcon>{item.icon}</ListItemIcon>
+                <ListItemText primary={item.text} />
               </ListItem>
             ))}
           </List>
         </Drawer>
 
-        <Box component="main" sx={{ flexGrow: 1, display: "flex", justifyContent: "center" }}>
-          {renderContent()}
+        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+          <Outlet />{/* All child routes will be rendered here */}
         </Box>
       </Box>
     </>
   );
-}
-
-const StatBox = ({ label, value }) => (
-  <Box>
-    <Typography variant="subtitle1" fontWeight={600}>{label}</Typography>
-    <Typography variant="h4" fontWeight={700}>{value}</Typography>
-  </Box>
-);
-
-const cardStyles = (bgColor) => ({
-  p: 3,
-  display: "flex",
-  alignItems: "center",
-  gap: 2,
-  backgroundColor: bgColor,
-  transition: "0.3s",
-  "&:hover": { boxShadow: 6 }
-});
+};
 
 export default AdminPage;

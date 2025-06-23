@@ -21,7 +21,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "http://192.168.1.1:5174",
+    origin: "http://192.168.2.223:5174",
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true
   }
@@ -69,7 +69,7 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/order", orderRoute);
 app.use("/api/wishlist", wishlistRoute);
 app.use("/api/admin", adminRoute);
-app.use("/api",reviewRoute)
+app.use("/api/review",reviewRoute)
 
 app.get("/", (req, res) => {
   res.send("Backend is Working!");

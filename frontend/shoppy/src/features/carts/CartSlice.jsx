@@ -5,8 +5,10 @@ export const addToCart = createAsyncThunk(
     "cart/addToCart",
     async ({ productId, quantity, colors }, { getState, rejectWithValue }) => {
         if (isAuthenticated()) {
+            console.log("authenticated user")
             try {
-                const response = await api.post(`/cart/add`, { productId, quantity ,colors});
+                const response = await api.post(`/cart/add`, { productId, quantity, colors });
+                console.log("response", response)
                 return response;
             } catch (error) {
                 return rejectWithValue(
@@ -88,16 +90,12 @@ export const getCart = createAsyncThunk(
 
 export const removeFromCart = createAsyncThunk(
     "cart/removeFromCart",
-    async (productId, { getState, rejectWithValue }) => {
+    async (cartItemId, { getState, rejectWithValue }) => {
         if (isAuthenticated()) {
             try {
-                const response = await api.delete(`/cart/remove?productId=${productId}`);
-
-                if (response.success) {
-                    return { items: response.items };
-                } else {
-                    return rejectWithValue(response.message || "Failed to remove from cart");
-                }
+                console.log("Removing product with ID:", cartItemId);
+                await api.delete(`/cart/remove/${cartItemId}`);
+                return { cartItemId }
             } catch (error) {
                 return rejectWithValue(
                     error.response?.data?.message || error.message || "Failed to remove from cart"
@@ -106,7 +104,7 @@ export const removeFromCart = createAsyncThunk(
         } else {
             const state = getState().cart;
 
-            const updatedItems = state.items.filter(item => item.productId !== productId);
+            const updatedItems = state.items.filter(item => item.productId !== cartItemId);
 
             localStorage.setItem("guest_cart", JSON.stringify(updatedItems));
             return { items: updatedItems };
@@ -204,18 +202,22 @@ const cartSlice = createSlice({
                 state.status = "loading";
             })
             .addCase(removeFromCart.fulfilled, (state, action) => {
+                if (isAuthenticated()) {
+                    const cartItemId = action.payload.cartItemId;
+                    state.items = state.items.filter(item => item._id !== cartItemId);
+                } else {
+                    state.items = action.payload.items;
+                }
+
+                state.cartQuantity = state.items.reduce((total, item) => total + item.quantity, 0);
                 state.status = "succeeded";
-                state.items = action.payload.items;
-                state.cartQuantity = state.items.reduce(
-                    (total, item) => total + item.quantity,
-                    0
-                );
+                state.error = null;
             })
             .addCase(removeFromCart.rejected, (state, action) => {
                 state.status = "failed";
                 state.error = action.payload || action.error.message;
             });
-    },
+},
 });
 
 export default cartSlice.reducer;

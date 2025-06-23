@@ -4,7 +4,7 @@ const Product = require("../model/productModel");
 exports.addToCart = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { productId, quantity ,colors} = req.body;
+        const { productId, quantity, colors } = req.body;
 
         if (!productId || typeof quantity !== 'number' || quantity === 0) {
             return res.status(400).json({ message: "Product ID and a non-zero quantity are required" });
@@ -84,7 +84,7 @@ exports.getCart = async (req, res) => {
             price: item.price,
             quantity: item.quantity,
             total: item.total,
-            colors:item.colors,
+            colors: item.colors,
             image: item.product.image,
         }));
 
@@ -97,11 +97,10 @@ exports.getCart = async (req, res) => {
 exports.removeFromCart = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { productId } = req.query;
-        console.log("Received productId from query:", productId);
+        const cartItemId = req.params.id;
 
-        if (!productId) {
-            return res.status(400).json({ message: "Product ID is required to remove item." });
+        if (!cartItemId) {
+            return res.status(400).json({ message: "Cart item ID is required to remove item." });
         }
 
         const cart = await Cart.findOne({ user: userId });
@@ -109,10 +108,9 @@ exports.removeFromCart = async (req, res) => {
             return res.status(404).json({ message: "Cart not found." });
         }
 
-        const itemIndex = cart.items.findIndex(item => item.product.toString() === productId);
-
+        const itemIndex = cart.items.findIndex(item => item._id.toString() === cartItemId);
         if (itemIndex === -1) {
-            return res.status(404).json({ message: "Product not found in cart." });
+            return res.status(404).json({ message: "Cart item not found." });
         }
 
         cart.items.splice(itemIndex, 1);
@@ -127,7 +125,7 @@ exports.removeFromCart = async (req, res) => {
             price: item.price,
             quantity: item.quantity,
             total: item.total,
-            colors:items.colors,
+            colors: item.colors,
             image: item.product.image,
         }));
 
@@ -137,5 +135,7 @@ exports.removeFromCart = async (req, res) => {
         res.status(500).json({ message: "Failed to remove item from cart" });
     }
 };
+
+
 
 

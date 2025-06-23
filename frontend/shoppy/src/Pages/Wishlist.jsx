@@ -9,6 +9,7 @@ import {
     IconButton,
     Divider,
     CircularProgress,
+    Tooltip,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
@@ -20,6 +21,7 @@ import {
 import { addToCart } from "../features/carts/CartSlice";
 import { toast } from "react-toastify";
 import ew from "../assets/ew.jpeg"
+import { xyzURL } from "../common/util";
 
 const Wishlist = () => {
     const dispatch = useDispatch();
@@ -30,18 +32,14 @@ const Wishlist = () => {
     }, [dispatch]);
 
     const handleRemove = (productId) => {
-        toast.error("Removed from wishlist", { autoClose: 1000 });
-        setTimeout(() => {
-            dispatch(removeWishList(productId));
-        }, 1000);
+        toast.error("Removed from wishlist", { autoClose: 700, hideProgressBar: true });
+        dispatch(removeWishList(productId));
     };
 
     const handleAddToCart = (product) => {
-        toast.success("Product added to cart...", { autoClose: 1000 });
-        setTimeout(() => {
-            dispatch(addToCart({ productId: product._id, quantity: 1 }));
-            dispatch(removeWishList(product._id));
-        }, 1000);
+        toast.success("Product added to cart...", { autoClose: 700, hideProgressBar: true });
+        dispatch(addToCart({ productId: product._id, quantity: 1 }));
+        dispatch(removeWishList(product._id));
     };
 
 
@@ -83,7 +81,7 @@ const Wishlist = () => {
                             <Box sx={{ display: "flex", alignItems: "center" }}>
                                 <CardMedia
                                     component="img"
-                                    image={`http://192.168.1.1:5000${product.image}`}
+                                    image={`${xyzURL}${product.image}`}
                                     alt={product.name}
                                     sx={{ width: 120, height: 120, objectFit: "contain", mr: 2 }}
                                 />
@@ -105,12 +103,14 @@ const Wishlist = () => {
                                 >
                                     Add to Cart
                                 </Button>
-                                <IconButton
-                                    color="error"
-                                    onClick={() => handleRemove(product._id)}
-                                >
-                                    <DeleteIcon />
-                                </IconButton>
+                                <Tooltip title="Remove this item">
+                                    <IconButton
+                                        color="error"
+                                        onClick={() => handleRemove(product._id)}
+                                    >
+                                        <DeleteIcon />
+                                    </IconButton>
+                                </Tooltip>
                             </Box>
                         </Card>
                     );

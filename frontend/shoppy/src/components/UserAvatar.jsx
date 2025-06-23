@@ -2,12 +2,12 @@ import React from "react";
 import { Avatar, IconButton } from "@mui/material";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { useSelector } from "react-redux";
+import { xyzURL } from "../common/util";
 
-const BASE_URL = "http://192.168.1.1:5000";
 
 const UserAvatar = ({ size = 30, onClick = null, showIconButton = false, src = null }) => {
   const user = useSelector((state) => state.user.user);
-  const imageSrc = src || (user?.image ? `${BASE_URL}${user.image}` : null);
+  const imageSrc = src || (user?.image ? `${xyzURL}${user.image}` : null);
 
   const avatar = imageSrc ? (
     <Avatar

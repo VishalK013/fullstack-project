@@ -25,14 +25,12 @@ function Home() {
 
     const handleClick = () => {
         if (!user) {
-            toast.error("Please login first!", { autoClose: 1000 });
+            toast.error("Please login first!", { autoClose: 700, hideProgressBar: true });
+            navigate("/login")
             return;
         }
-
-        toast.success("Redirecting to product page!", { autoClose: 1000 });
-        setTimeout(() => {
-            navigate("/products");
-        }, 1000);
+        toast.success("Redirecting to product page!", { autoClose: 700, hideProgressBar: true });
+        navigate("/products");
     };
 
     return (
@@ -243,7 +241,6 @@ function Home() {
             <ScrollReveal><Divider variant='middle' sx={{ width: '90%', margin: 'auto' }} /></ScrollReveal>
             <ScrollReveal> <TopSellings /></ScrollReveal>
             <ScrollReveal><DressStyle /></ScrollReveal>
-            <ScrollReveal><ReviewPage /></ScrollReveal>
         </Box>
     );
 }

@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../model/userModel");
+const sendEmail = require("../utils/sendEmail")
 
 const JWT_SECRET = process.env.JWT_SECRET || "Viking001";
 
@@ -35,6 +36,12 @@ exports.registerUser = async (req, res) => {
     );
 
     await newUser.save();
+
+    await sendEmail(
+      email,
+      "Welcome to My Our E-commerce clothing website",
+      `<h2>Hello ${username},</h2><p>Thanks for registering. Your account is ready to use!</p>`
+    );
 
     return res.status(201).json({
       user: {

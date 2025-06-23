@@ -42,10 +42,15 @@ function LoginPage() {
     });
 
     useEffect(() => {
+        dispatch(clearStatus());
+    }, [dispatch]);
+
+    useEffect(() => {
         if (success && user) {
             toast.success("Login successful! Redirecting...", {
                 position: "top-center",
-                autoClose: 1000,
+                autoClose: 700,
+                hideProgressBar:true
             });
 
             const redirectPath = user.role === "admin" ? "/admin" : "/";
@@ -63,10 +68,11 @@ function LoginPage() {
 
     useEffect(() => {
         if (error) {
-             console.log("Login error:", error);
+            console.log("Login error:", error);
             toast.error(error, {
                 position: "top-center",
-                autoClose: 2000,
+                autoClose: 1000,
+                hideProgressBar:true,
                 onClose: () => dispatch(clearStatus()),
             });
         }

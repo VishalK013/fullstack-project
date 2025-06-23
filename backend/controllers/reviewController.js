@@ -6,19 +6,19 @@ exports.createOrUpdateReview = async (req, res) => {
     const userId = req.user.id;
 
     try {
-
         const review = await Review.findOneAndUpdate(
             { user: userId, product: productId },
             { rating, comment },
             { upsert: true, new: true, setDefaultsOnInsert: true }
-        )
+        );
 
         const reviews = await Review.find({ product: productId });
 
-        const avgRating = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+        const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
+        const avgRating = reviews.length > 0 ? totalRating / reviews.length : 0;
 
         await Product.findByIdAndUpdate(productId, {
-            rating: avgRating.toFixed(1),
+            rating: Number(avgRating.toFixed(1)),
             numReviews: reviews.length
         });
 
@@ -28,7 +28,8 @@ exports.createOrUpdateReview = async (req, res) => {
         console.error(error);
         res.status(500).json({ message: "Something went wrong" });
     }
-}
+};
+
 exports.getProductReviews = async (req, res) => {
     try {
         const reviews = await Review.find({ product: req.params.productId }).populate('user', 'name');
@@ -44,13 +45,34 @@ exports.getMyReviews = async (req, res) => {
     res.json(reviews);
 };
 
-exports.getAllReviews = async (req, res) => {
+exports.getReviewsByProductId = async (req, res) => {
     try {
-        const reviews = await Review.find()
-            .populate('user', 'name')
-            .populate('product', 'name');
+        const { productId } = req.params;
+        const reviews = await Review.find({ product: productId })
+            .sort({ rating: -1 })
+            .populate('user', 'username image')
+            .populate('product', 'name')
+
         res.status(200).json(reviews);
     } catch (err) {
-        res.status(500).json({ message: "Failed to fetch all reviews" });
+        res.status(500).json({ message: "Failed to fetch reviews for this product" });
     }
 };
+
+exports.deleteReview = async (req, res) => {
+    const reviewId = req.params.id;
+
+    try {
+        const review = await Review.findById(reviewId);
+        if (!review) {
+            return res.status(404).json({ message: "Review not found" });
+        }
+
+        await Review.deleteOne({ _id: reviewId });
+        res.status(200).json({ message: "Review deleted successfully" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Failed to delete review" });
+    }
+};
+

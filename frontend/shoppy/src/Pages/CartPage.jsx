@@ -12,7 +12,8 @@ import {
     DialogActions,
     TextField,
     useMediaQuery,
-    useTheme
+    useTheme,
+    Tooltip
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
@@ -24,7 +25,9 @@ import * as Yup from "yup";
 import { isAuthenticated } from "../api/Api";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import empty from "../assets/cart.png"
+import empty from "../assets/cart.png";
+import { xyzURL } from "../common/util";
+import Confetti from 'react-confetti';
 
 
 const CartItem = React.memo(({ item, onIncrement, onDecrement, onRemove, isMobile }) => (
@@ -43,11 +46,19 @@ const CartItem = React.memo(({ item, onIncrement, onDecrement, onRemove, isMobil
         }}
     >
         <Box
-            component="img"
-            src={`http://localhost:5000${item.product?.image || item.image}`}
-            width={isMobile ? "100%" : 100}
-            loading="lazy"
-        />
+            sx={{
+                height: isMobile ? "auto" : 100,
+                width: isMobile ? "100%" : 100,
+                overflow: "hidden",
+            }}
+        >
+            <Box
+                component="img"
+                src={`${xyzURL}${item.product?.image || item.image}`}
+                alt={item.product?.name || item.name}
+                sx={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+        </Box>
         <Box>
             <Typography variant="h6" py={isMobile ? 1 : 0}>{item.product?.name || item.name}</Typography>
             {item.product?.colors?.length > 0 && item.color ? (
@@ -70,32 +81,44 @@ const CartItem = React.memo(({ item, onIncrement, onDecrement, onRemove, isMobil
             ) : (
                 <Typography variant="caption">Color: N/A</Typography>
             )}
-
             <Typography color="text.secondary" pb={isMobile ? 1 : 0} textAlign={"center"}>
                 Price: ${item.product?.price?.toFixed(2) || item.price?.toFixed(2) || "0.00"}
             </Typography>
         </Box>
         <Box sx={{ display: "flex", alignItems: "center" }} flexDirection={isMobile ? "column" : "row"}>
-            <Box display={"flex"} alignItems={"center"} pb={isMobile ? 2 : 0}>
-                <IconButton aria-label="decrease" onClick={onDecrement} disabled={item.quantity === 1}>
-                    <RemoveIcon />
-                </IconButton>
+            <Box display="flex" alignItems="center" pb={isMobile ? 2 : 0}>
+                <Tooltip title="Decrease quantity">
+                    <span>
+                        <IconButton
+                            aria-label="decrease"
+                            onClick={onDecrement}
+                            disabled={item.quantity === 1}
+                        >
+                            <RemoveIcon />
+                        </IconButton>
+                    </span>
+                </Tooltip>
                 <Typography sx={{ mx: 1, minWidth: 25, textAlign: "center", fontWeight: "bold" }}>
                     {item.quantity || 0}
                 </Typography>
-                <IconButton aria-label="increase" onClick={onIncrement}>
-                    <AddIcon />
-                </IconButton>
+                <Tooltip title="Increase quantity">
+                    <IconButton aria-label="increase" onClick={onIncrement}>
+                        <AddIcon />
+                    </IconButton>
+                </Tooltip>
             </Box>
-            <IconButton sx={{ color: "red" }} onClick={() => onRemove(item.product || item._id)}>
-                <DeleteIcon />
-            </IconButton>
+            <Tooltip title="Remove this item">
+                <IconButton sx={{ color: "red" }} onClick={() => onRemove(item.product)}>
+                    <DeleteIcon />
+                </IconButton>
+            </Tooltip>
         </Box>
     </Paper>
 ));
 
 const CartPage = () => {
     const [openCheckout, setOpenCheckout] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
 
     const dispatch = useDispatch();
     const cartItems = useSelector((state) => state.cart.items);
@@ -103,20 +126,22 @@ const CartPage = () => {
 
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+    const navigate = useNavigate();
 
     useEffect(() => {
         dispatch(getCart());
     }, [dispatch]);
 
-
     useEffect(() => {
         if (orderConfirmation) {
             dispatch(clearCart());
             setOpenCheckout(false);
+            setShowSuccess(true);
+            
+            const timer = setTimeout(() => setShowSuccess(false), 3000);
+            return () => clearTimeout(timer);
         }
     }, [orderConfirmation, dispatch]);
-
-    const navigate = useNavigate();
 
     const handleCheckout = () => {
         if (isAuthenticated()) {
@@ -146,92 +171,72 @@ const CartPage = () => {
         return acc + price * quantity;
     }, 0);
 
-    if (!cartItems || cartItems.length === 0) {
-        return (
-            <Box sx={{ py: 15, textAlign: "center" }}>
-                <Box
-                    component="img"
-                    src={empty}
-                />
-            </Box>
-        );
-    }
-
     return (
         <Box sx={{ p: 2 }}>
-            <Box
-                sx={{
-                    maxWidth: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: { xs: "center", md: "center", lg: "space-between" },
-                    flexWrap: "wrap",
-                    gap: 2,
-                    mx: "auto",
-                    mt: 4,
-                    p: 2,
-                }}
-                border
-                boxShadow
-            >
-                {cartItems.map((item) => (
-                    <CartItem
-                        key={item._id}
-                        item={item}
-                        isMobile={isMobile}
-                        onIncrement={() => {
-                            if (isAuthenticated()) {
-                                dispatch(addToCart({ productId: item.product?._id || item.product, quantity: 1 }));
-                            } else {
-                                dispatch(incrementGuestQuantity(item.product?._id || item.product));
-                            }
+            {cartItems && cartItems.length > 0 ? (
+                <>
+                    <Box
+                        sx={{
+                            maxWidth: "100%",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: { xs: "center", md: "center", lg: "space-between" },
+                            flexWrap: "wrap",
+                            gap: 2,
+                            mx: "auto",
+                            mt: 4,
+                            p: 2,
                         }}
+                        border
+                        boxShadow
+                    >
+                        {cartItems.map((item) => (
+                            <CartItem
+                                key={item._id}
+                                item={item}
+                                isMobile={isMobile}
+                                onIncrement={() => {
+                                    if (isAuthenticated()) {
+                                        dispatch(addToCart({ productId: item.product?._id || item.product, quantity: 1 }));
+                                    } else {
+                                        dispatch(incrementGuestQuantity(item.product?._id || item.product));
+                                    }
+                                }}
+                                onDecrement={() => {
+                                    if (isAuthenticated()) {
+                                        if (item.quantity > 1) {
+                                            dispatch(addToCart({ productId: item.product?._id || item.product, quantity: -1 }));
+                                        }
+                                    } else {
+                                        dispatch(decrementGuestQuantity(item.product?._id || item.product));
+                                    }
+                                }}
+                                onRemove={() => {
+                                    toast.error("Product is Removed!", { autoClose: 700, hideProgressBar: true });
+                                    if (isAuthenticated()) {
+                                        dispatch(removeFromCart(item._id));
+                                    } else {
+                                        dispatch(removeFromCart(item.productId || item.product));
+                                    }
+                                }}
+                            />
+                        ))}
+                    </Box>
 
-                        onDecrement={() => {
-                            if (isAuthenticated()) {
-                                if (item.quantity > 1) {
-                                    dispatch(addToCart({ productId: item.product?._id || item.product, quantity: -1 }));
-                                }
-                            } else {
-                                dispatch(decrementGuestQuantity(item.product?._id || item.product));
-                            }
-                        }}
-                        onRemove={() => {
-                            if (isAuthenticated()) {
-                                toast.error("Product is Removed ! ", { autoClose: 1000 })
-                                setTimeout(() => {
-                                    dispatch(removeFromCart(item.product?._id || item.product));
-                                }, 1000)
-                            } else {
-                                toast.error("Product is Removed ! ", { autoClose: 1000 })
-                                setTimeout(() => {
-                                    dispatch(removeFromCart(item.productId));
-                                }, 1000)
-                            }
-                        }}
-
-                    />
-                ))}
-            </Box>
-
-            <Box
-                sx={{
-                    mt: 10,
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    gap: 2,
-                    flexWrap: "wrap",
-                }}
-            >
-                <Typography variant="h6" fontWeight={700} mb={0}>
-                    Total: ${totalPrice.toFixed(2)}
-                </Typography>
-                <Button variant="contained" onClick={handleCheckout} color="primary" size="large">
-                    Checkout
-                </Button>
-            </Box>
+                    <Box sx={{ mt: 10, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: 2 }}>
+                        <Typography variant="h6" fontWeight={700}>
+                            Total: ${totalPrice.toFixed(2)}
+                        </Typography>
+                        <Button variant="contained" onClick={handleCheckout} color="primary" size="large">
+                            Checkout
+                        </Button>
+                    </Box>
+                </>
+            ) : (
+                <Box sx={{ py: 15, textAlign: "center" }}>
+                    <Box component="img" src={empty} />
+                </Box>
+            )}
 
             <Dialog open={openCheckout} onClose={() => setOpenCheckout(false)} maxWidth="md" fullWidth>
                 <DialogTitle>Review Your Order</DialogTitle>
@@ -240,9 +245,7 @@ const CartPage = () => {
                         {cartItems.map((item) => (
                             <Box key={item._id} display="flex" justifyContent="space-between" mb={2}>
                                 <Typography>{item.product?.name || item.name} x {item.quantity}</Typography>
-                                <Typography>
-                                    ${((item.product?.price || item.price) * item.quantity).toFixed(2)}
-                                </Typography>
+                                <Typography>${((item.product?.price || item.price) * item.quantity).toFixed(2)}</Typography>
                             </Box>
                         ))}
                         <Typography fontWeight="bold" mt={2}>
@@ -271,6 +274,45 @@ const CartPage = () => {
                     </DialogActions>
                 </form>
             </Dialog>
+
+            <Dialog
+                open={showSuccess}
+                onClose={() => setShowSuccess(false)}
+                maxWidth="sm"
+                fullWidth
+                PaperProps={{
+                    sx: {
+                        position: "relative",
+                        overflow: "hidden",
+                    },
+                }}
+            >
+                <Box textAlign="center" p={4} position="relative">
+
+                    <Confetti
+                        width={undefined}
+                        height={100}
+                        numberOfPieces={150}
+                        gravity={0.3}
+                        style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            height: 100,
+                            pointerEvents: "none",
+                        }}
+                    />
+
+                    <Typography variant="h5" fontWeight={700}>
+                        🎉 Your Order was Placed Successfully!
+                    </Typography>
+                    <Typography variant="subtitle1" mt={2}>
+                        Thanks for your purchase. We will ship it soon.
+                    </Typography>
+                </Box>
+            </Dialog>
+
 
         </Box>
     );

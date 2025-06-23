@@ -115,7 +115,6 @@ exports.editProduct = async (req, res) => {
     }
 };
 
-
 exports.deleteProduct = async (req, res) => {
     try {
 
@@ -135,7 +134,6 @@ exports.deleteProduct = async (req, res) => {
 
     }
 };
-
 
 exports.getAllProducts = async (req, res) => {
     try {
@@ -241,7 +239,6 @@ exports.getNewArrivals = async (req, res) => {
     }
 };
 
-
 exports.getTopSellings = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
@@ -258,6 +255,7 @@ exports.getTopSellings = async (req, res) => {
         res.status(404).json({ message: "Failed to fetch Top Sellings", error: error.message })
     }
 }
+
 exports.getClothingTypes = async (req, res) => {
     try {
         const clothingType = await Product.distinct("clothingType");
@@ -267,6 +265,7 @@ exports.getClothingTypes = async (req, res) => {
         res.status(500).json({ error: "Failed to fetch clothing types" });
     }
 }
+
 exports.getColors = async (req, res) => {
     try {
         const colors = await Product.distinct("colors");

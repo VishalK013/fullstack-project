@@ -84,6 +84,7 @@ exports.getUsersOrder = async (req, res) => {
         res.status(500).json({ message: error.message || "Internal server error" });
     }
 }
+
 exports.getUserOrderCount = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -104,6 +105,10 @@ exports.updateOrderStatus = async (req, res) => {
 
         if (!order) {
             return res.status(404).json({ message: "Order not found..." })
+        }
+
+        if (order.status === "Delivered" || order.status === "Cancelled") {
+            return res.status(404).json({ message: "Can not chnage status once it's Delivered or Cancelled" })
         }
 
         order.status = status;
@@ -138,3 +143,39 @@ exports.updateOrderStatus = async (req, res) => {
         res.status(500).json({ message: error.message || "Internal server error" });
     }
 }
+
+exports.cancleOrder = async (req, res) => {
+    try {
+
+        const orderId = req.params.id;
+        const order = await Order.findById(orderId)
+
+        if (!order) {
+            return res.status(404).json({ message: "Order not found..." })
+        }
+
+        if (order.status !== 'Pending' && order.status !== "Shipped") {
+            return res.status(404).json({ message: "Only pending and shipped ordres can be cancelled" })
+        }
+
+        order.status = "Cancelled";
+        await order.save();
+
+        const io = req.app.get("io");
+        const onlineUsers = req.app.get("onlineUsers");
+        const userId = order.user._id.toString();
+        const socketId = onlineUsers[userId];
+        if (socketId) {
+            io.to(socketId).emit("order-status-updated", {
+                orderId: order._id,
+                newStatus: order.status,
+                message: "Your order has been cancelled.",
+            });
+        }
+
+        res.json({ message: "Order cancelled successfully", order });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: error.message || "Internal server error" });
+    }
+};

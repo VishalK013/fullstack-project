@@ -30,22 +30,25 @@ const inputRow = {
 function SignUpPage() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { loading, success, error } = useSelector((state) => state.user);
+    const { loading, success, error,user } = useSelector((state) => state.user);
 
     useEffect(() => {
-        if (success) {
-            toast.success("Signup successful! Redirecting to login...", {
+        if (user) {
+            toast.success("Signup successful! Redirecting...", {
                 position: "top-center",
-                autoClose: 2000,
+                autoClose: 700,
+                hideProgressBar:true
             });
 
+            const redirectPath = user.role === "admin" ? "/admin" : "/";
             const timer = setTimeout(() => {
-                navigate("/login");
-            }, 2000);
+                navigate(redirectPath);
+            }, 1000);
 
             return () => clearTimeout(timer);
         }
-    }, [success, navigate]);
+    }, [user, navigate]);
+
 
     useEffect(() => {
         return () => dispatch(clearStatus());
@@ -102,7 +105,6 @@ function SignUpPage() {
                     Sign Up
                 </Typography>
 
-                {/* Username */}
                 <FormControl fullWidth>
                     <Box sx={inputRow}>
                         <PersonIcon color="action" sx={{ fontSize: 24 }} />
@@ -131,14 +133,13 @@ function SignUpPage() {
                             }}
                             sx={{
                                 backgroundColor: "#edebeb",
-                                position: "relative", // required for absolute positioning
+                                position: "relative",
                             }}
                         />
 
                     </Box>
                 </FormControl>
 
-                {/* Email */}
                 <FormControl fullWidth>
                     <Box sx={inputRow}>
                         <MailOutlineIcon color="action" sx={{ fontSize: 24 }} />
@@ -174,7 +175,6 @@ function SignUpPage() {
                     </Box>
                 </FormControl>
 
-                {/* Password */}
                 <FormControl fullWidth>
                     <Box sx={inputRow}>
                         <LockIcon color="action" sx={{ fontSize: 24 }} />
@@ -208,14 +208,12 @@ function SignUpPage() {
                     </Box>
                 </FormControl>
 
-                {/* Error Display */}
                 {error && (
                     <Typography color="error" textAlign="center">
                         {error}
                     </Typography>
                 )}
 
-                {/* Submit Button */}
                 <Button
                     type="submit"
                     variant="contained"
@@ -226,7 +224,6 @@ function SignUpPage() {
                     {loading ? "Signing up..." : "Sign up"}
                 </Button>
 
-                {/* Footer link */}
                 <Typography variant="body2" textAlign="center" mt={1}>
                     Already have an account?{" "}
                     <MuiLink component={Link} to="/login" underline="hover">

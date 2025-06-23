@@ -6,19 +6,28 @@ const tokenFromStorage = localStorage.getItem("token");
 
 export const signupUser = createAsyncThunk(
     "user/signupUser",
-    async (userdata, { rejectWithValue }) => {
-
+    async (userData, { rejectWithValue }) => {
         try {
+            const response = await api.post(`/users/register`, userData);
 
-            const response = await api.post(`/users/register`, userdata);
-            return response;
+            const { token, user } = response;
 
+            const expiryTime = 7 * 24 * 60 * 60 * 1000;
+            localStorage.setItem("token", token);
+            localStorage.setItem("expiry", Date.now() + expiryTime);
+
+            return { user, token };
         } catch (error) {
-            const message = error?.response?.data?.message || error?.message || "Login failed. Please try again.";
+            const message =
+                error?.response?.data?.error ||
+                error?.response?.data?.message ||
+                error?.message ||
+                "Signup failed.";
             return rejectWithValue(message);
         }
     }
 );
+
 
 export const loginUser = createAsyncThunk(
     "user/loginUser",
@@ -153,12 +162,9 @@ const userSlice = createSlice({
             })
             .addCase(signupUser.fulfilled, (state, action) => {
                 state.loading = false;
+                state.success = true;
                 state.user = action.payload.user;
                 state.token = action.payload.token;
-                state.success = action.payload.message;
-
-                localStorage.setItem("user", JSON.stringify(action.payload));
-                localStorage.setItem("token", action.payload);
             })
             .addCase(signupUser.rejected, (state, action) => {
                 state.loading = false;

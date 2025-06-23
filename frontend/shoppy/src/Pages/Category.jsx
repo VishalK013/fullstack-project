@@ -35,6 +35,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import WishListButton from "../components/WishListButton";
 import { fetchWishList } from "../features/wishlist/WishListSlice";
+import { xyzURL } from "../common/util";
 
 const sizeOptions = ["XS", "S", "M", "L", "XL"];
 const sizeLabels = {
@@ -139,8 +140,8 @@ function Category() {
     }, [dispatch]);
 
     const handleSinglePage = (product) => {
-        toast.success(`Redirecting to ${product.name}`, { autoClose: 1500 });
-        setTimeout(() => navigate(`/products/${product._id}`), 1000);
+        toast.success(`Redirecting to ${product.name}`, { autoClose: 700, hideProgressBar: true });
+        navigate(`/products/${product._id}`)
     };
 
     if (error) return <div>Error: {error}</div>;
@@ -316,21 +317,35 @@ function Category() {
                                                 <CardMedia
                                                     component="img"
                                                     height="300"
-                                                    image={`http://192.168.1.1:5000${product.image}`}
+                                                    image={`${xyzURL}${product.image}`}
                                                     alt={product.name}
                                                     loading="lazy"
                                                     onClick={() => handleSinglePage(product)}
                                                     sx={{ borderRadius: 5, cursor: "pointer" }}
                                                 />
-                                                <WishListButton productId={product._id} iconSize="small" absolutePosition={true} />
+                                                <Tooltip title="Add to Wishlist" placement="bottom">
+                                                    <span
+                                                        style={{
+                                                            position: "absolute",
+                                                            top: "0px",
+                                                            right: "0px"
+                                                        }}
+                                                    >
+                                                        <WishListButton
+                                                            productId={product._id}
+                                                            iconSize="small"
+                                                            cursor="pointer"
+                                                        />
+                                                    </span>
+                                                </Tooltip>
                                                 <CardContent>
                                                     <Typography variant="h6" gutterBottom>
                                                         {product.name}
                                                     </Typography>
                                                     <Box display="flex" alignItems="center" justifyContent="center" gap={1}>
-                                                        <Rating value={product.rating} readOnly precision={0.5} size="medium" />
+                                                        <Rating value={Number(product.rating) || 0} readOnly precision={0.5} size="medium" />
                                                         <Typography variant="body2" color="text.secondary">
-                                                            {product.rating}/5
+                                                            ({product.numReviews || 0} review{product.numReviews === 1 ? "" : "s"})
                                                         </Typography>
                                                     </Box>
                                                     <Typography variant="body2" fontWeight={700} fontSize={22} mt={1}>

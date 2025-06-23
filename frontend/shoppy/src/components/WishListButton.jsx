@@ -11,7 +11,6 @@ const WishListButton = ({ productId }) => {
     const dispatch = useDispatch();
     const { items: rawWishlist = [] } = useSelector(state => state.wishlist);
 
-    // 💡 Normalize wishlist items to just an array of productIds
     const wishlist = useMemo(
         () =>
             rawWishlist.map(item =>
@@ -39,10 +38,10 @@ const WishListButton = ({ productId }) => {
 
         const exists = wishlist.includes(productId);
         if (exists) {
-            toast.error("Removed from wishlist", { autoClose: 1000 });
+            toast.error("Removed from wishlist", { autoClose: 700, hideProgressBar: true });
             dispatch(removeWishList(productId));
         } else {
-            toast.success("Added to wishlist", { autoClose: 1000 });
+            toast.success("Added to wishlist", { autoClose: 700, hideProgressBar: true });
             dispatch(addToWishLIst(productId));
         }
     };

@@ -12,6 +12,7 @@ import {
   ListItemText,
   Divider,
   Badge,
+  Tooltip,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
@@ -53,7 +54,8 @@ function Navbar() {
     dispatch(clearCart());
     toast.error("Logged out successfully", {
       position: "top-center",
-      autoClose: 1000,
+      autoClose: 700,
+      hideProgressBar: true
     });
     setTimeout(() => {
       navigate("/");
@@ -65,24 +67,18 @@ function Navbar() {
   };
 
   const handleCartClick = () => {
-    toast.success("Redirecting to Cart!", { autoClose: 1500 });
-    setTimeout(() => {
-      navigate("/cart");
-    }, 1000);
+    toast.success("Redirecting to Cart!", { autoClose: 700, hideProgressBar: true });
+    navigate("/cart");
   };
 
   const handleOrdersClick = () => {
-    toast.info("Opening your orders...", { autoClose: 1000 });
-    setTimeout(() => {
-      navigate("/orders");
-    }, 1000);
+    toast.info("Opening your orders...", { autoClose: 700, hideProgressBar: true });
+    navigate("/orders");
   };
 
   const handleWishList = () => {
-    toast.info("Opening wishlist cart...", { autoClose: 1000 })
-    setTimeout(() => {
-      navigate("/wishlist")
-    }, 1000);
+    toast.info("Opening wishlist cart...", { autoClose: 700, hideProgressBar: true })
+    navigate("/wishlist")
   }
 
   return (
@@ -131,47 +127,66 @@ function Navbar() {
             </Typography>
           </Box>
 
-          <Box sx={{ display: { xs: "none", md: 'none', lg: 'flex' }, gap: 3 }}>
-            <Button color="inherit" sx={{ fontWeight: 700, textTransform: 'none' }}>
-              Shop
-            </Button>
-            <Button color="inherit" sx={{ fontWeight: 700, textTransform: 'none' }}>
-              On Sale
-            </Button>
-            <Button color="inherit" sx={{ fontWeight: 700, textTransform: 'none' }}>
-              New Arrival
-            </Button>
-            <Button color="inherit" sx={{ fontWeight: 700, textTransform: 'none' }}>
-              Brands
-            </Button>
-          </Box>
+          {user && (
+            <Box sx={{ display: { xs: "none", md: 'none', lg: 'flex' }, gap: 3 }}>
+              <Button color="inherit" onClick={() => {
+                toast.success("Redirecting to product page!", { autoClose: 700, hideProgressBar: true });
+                navigate("/");
+              }}
+                sx={{ fontWeight: 700, textTransform: 'none' }}>
+                Shop
+              </Button>
+              <Button color="inherit"
+                onClick={() => {
+                  toast.success("Redirecting to product page!", { autoClose: 700, hideProgressBar: true });
+                  navigate("/products");
+                }}
+                sx={{ fontWeight: 700, textTransform: 'none' }}>
+                Products
+              </Button>
+            </Box>
+          )}
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: "center" }}>
-            <IconButton onClick={handleCartClick} aria-label="cart">
-              <Badge badgeContent={quantity} color="primary">
-                <ShoppingCartOutlinedIcon sx={{ fontSize: { xs: 20 } }} />
-              </Badge>
-            </IconButton>
-
-            {user && (
-              <IconButton onClick={handleWishList} aria-label="orders">
-                <Badge badgeContent={wishlistCount} color="primary">
-                  <ListAltIcon sx={{ fontSize: { xs: 20 } }} />
+            <Tooltip title="Shooping Cart">
+              <IconButton onClick={handleCartClick} aria-label="cart">
+                <Badge badgeContent={quantity} color="primary">
+                  <ShoppingCartOutlinedIcon sx={{ fontSize: { xs: 20 } }} />
                 </Badge>
               </IconButton>
+            </Tooltip>
+
+            {user && (
+              <Tooltip title="Wishlist Cart">
+                <IconButton onClick={handleWishList} aria-label="orders">
+                  <Badge badgeContent={wishlistCount} color="primary">
+                    <ListAltIcon sx={{ fontSize: { xs: 20 } }} />
+                  </Badge>
+                </IconButton>
+              </Tooltip>
             )}
 
             {user && (
-              <IconButton onClick={handleOrdersClick} aria-label="orders">
-                <Badge badgeContent={orderCount} color="primary">
-                  <ShoppingBagIcon sx={{ fontSize: { xs: 20 } }} />
-                </Badge>
-              </IconButton>
+              <Tooltip title="My Orders">
+                <IconButton onClick={handleOrdersClick} aria-label="orders">
+                  <Badge badgeContent={orderCount} color="primary">
+                    <ShoppingBagIcon sx={{ fontSize: { xs: 20 } }} />
+                  </Badge>
+                </IconButton>
+              </Tooltip>
             )}
 
             {user ? (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <UserAvatar size={30} onClick={() => navigate("/profile")} showIconButton />
+                <Tooltip title="My Profile">
+                  <span>
+                    <UserAvatar
+                      size={30}
+                      onClick={() => navigate("/profile")}
+                      showIconButton
+                    />
+                  </span>
+                </Tooltip>
                 <Button
                   onClick={handleLogout}
                   variant="contained"
@@ -217,24 +232,31 @@ function Navbar() {
             <CloseIcon />
           </IconButton>
         </Box>
-        <Box sx={{ width: 250 }} role="presentation" onClick={toggleDrawer(false)}>
+        <Box
+          sx={{ width: 250 }}
+          role="presentation"
+          onClick={toggleDrawer(false)}
+          onKeyDown={toggleDrawer(false)}
+        >
           <List>
-            <ListItem button>
-              <ListItemText primary="Shop" />
+            <ListItem button onClick={() => {
+              toast.success("Redirecting to Shop!", { autoClose: 700, hideProgressBar: true });
+              navigate('/');
+            }}>
+              <ListItemText sx={{ fontWeight: 900 }} primary="Shop" />
             </ListItem>
-            <ListItem button>
-              <ListItemText primary="On Sale" />
-            </ListItem>
-            <ListItem button>
-              <ListItemText primary="New Arrival" />
-            </ListItem>
-            <ListItem button>
-              <ListItemText primary="Brands" />
+
+            <ListItem button onClick={() => {
+              toast.success("Redirecting to Products!", { autoClose: 700, hideProgressBar: true });
+              navigate('/products');
+            }}>
+              <ListItemText sx={{ fontWeight: 900 }} primary="Product" />
             </ListItem>
           </List>
           <Divider />
         </Box>
       </Drawer>
+
     </Box>
   );
 }

@@ -17,26 +17,32 @@ import {
     Paper,
     IconButton,
     Avatar,
-    TextField,
     Button,
     CircularProgress,
     Box,
     Typography,
     Dialog,
     Grow,
-    Pagination, // <-- import Pagination here
+    Pagination,
 } from "@mui/material";
 import { useFormik } from "formik";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import CommentIcon from "@mui/icons-material/Comment";
+import ProductFormDialog from "../components/ProductFormDialog";
 import * as Yup from "yup";
+import ProductReviewDialog from "../components/ProductReviewDialog";
+import { xyzURL } from "../common/util";
 
 const Product = () => {
-    const [isEditing, setIsEditing] = useState(false);
+    const [mode, setMode] = useState("add");
     const [editProductId, setEditProductId] = useState(null);
     const [formDialogOpen, setFormDialogOpen] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [productToDelete, setProductToDelete] = useState(null);
+    const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
+    const [selectedProductId, setSelectedProductId] = useState(null);
+
 
     const [page, setPage] = useState(1);
     const PRODUCTS_PER_PAGE = 5;
@@ -59,6 +65,12 @@ const Product = () => {
         }
     }, [addProductSuccess, dispatch]);
 
+
+    const handleViewReviews = (productId) => {
+        setSelectedProductId(productId);
+        setReviewDialogOpen(true);
+    };
+
     const formik = useFormik({
         enableReinitialize: true,
         initialValues: {
@@ -79,7 +91,6 @@ const Product = () => {
             description: Yup.string().required("Required"),
             category: Yup.string().required("Required"),
             clothingType: Yup.string().required("Clothing type is required"),
-            rating: Yup.number().typeError("Must be a number").min(0).max(5).required(),
             sold: Yup.number().typeError("Must be a number").min(0, "Cannot be negative").required("Sold quantity is required"),
             image: Yup.mixed().test("fileType", "Unsupported Format", value => {
                 if (!value || typeof value === "string") return true;
@@ -87,8 +98,8 @@ const Product = () => {
             }),
         }),
         onSubmit: async (values) => {
-            const payload = isEditing ? values : new FormData();
-            if (!isEditing) {
+            const payload = mode === "edit" ? values : new FormData();
+            if (mode !== "edit") {
                 Object.entries(values).forEach(([key, val]) => {
                     if (key === "image" && !val) return;
                     payload.append(key, val);
@@ -96,14 +107,13 @@ const Product = () => {
             }
 
             try {
-                if (isEditing) {
+                if (mode === "edit") {
                     await dispatch(editProduct({ id: editProductId, productData: payload }));
                 } else {
                     await dispatch(addProduct(payload));
                 }
 
                 formik.resetForm();
-                setIsEditing(false);
                 setEditProductId(null);
                 setFormDialogOpen(false);
             } catch (error) {
@@ -112,9 +122,22 @@ const Product = () => {
         }
     });
 
-    const handleImageChange = (e) => {
-        const file = e.currentTarget.files[0];
-        formik.setFieldValue("image", file);
+    const openAddForm = () => {
+        setMode("add");
+        formik.resetForm();
+        setFormDialogOpen(true);
+    };
+
+    const handleEdit = (product) => {
+        setMode("edit");
+        formik.setValues({
+            ...product,
+            image: `${xyzURL}${product.image}`,
+            sold: product.sold || 0,
+            clothingType: product.clothingType || "",
+        });
+        setEditProductId(product._id);
+        setFormDialogOpen(true);
     };
 
     const handleDelete = (id) => {
@@ -128,29 +151,6 @@ const Product = () => {
         setDeleteDialogOpen(false);
         setProductToDelete(null);
     };
-
-    const openForm = () => {
-        setIsEditing(false);
-        setEditProductId(null);
-        formik.resetForm();
-        setFormDialogOpen(true);
-    };
-
-    const handleEdit = (product) => {
-        formik.setValues({
-            ...product,
-            image: `http://192.168.1.1:5000${product.image}`,
-            sold: product.sold || 0,
-            clothingType: product.clothingType || "",
-        });
-        setIsEditing(true);
-        setEditProductId(product._id);
-        setFormDialogOpen(true);
-    };
-
-    useEffect(() => {
-        console.log("Formik values:", formik.values);
-    }, [formik.values]);
 
     const renderedProducts = useMemo(() => (
         <TableContainer component={Paper} sx={{ borderRadius: 4, mt: 3 }}>
@@ -175,7 +175,7 @@ const Product = () => {
                                 <TableCell>
                                     <Avatar
                                         variant="rounded"
-                                        src={`http://192.168.1.1:5000${product.image}`}
+                                        src={`${xyzURL}${product.image}`}
                                         loading="lazy"
                                         alt={product.name}
                                         sx={{ width: 56, height: 56 }}
@@ -188,7 +188,7 @@ const Product = () => {
                                 <TableCell>${product.price}</TableCell>
                                 <TableCell>
                                     {Array.isArray(product.colors) && product.colors.length > 0 ? (
-                                        <Box display="flex" justifyContent={"center"} alignItems={"center"} gap={1} flexWrap="wrap">
+                                        <Box display="flex" justifyContent="center" alignItems="center" gap={1} flexWrap="wrap">
                                             {product.colors.map((color, idx) => (
                                                 <Box
                                                     key={idx}
@@ -203,12 +203,15 @@ const Product = () => {
                                             ))}
                                         </Box>
                                     ) : (
-                                        <Typography variant="body2" textAlign={"center"} fontWeight={700} color="#808080">
+                                        <Typography variant="body2" textAlign="center" fontWeight={700} color="#808080">
                                             Not Available
                                         </Typography>
                                     )}
                                 </TableCell>
                                 <TableCell>
+                                    <IconButton color="primary" onClick={() => handleViewReviews(product._id)}>
+                                        <CommentIcon />
+                                    </IconButton>
                                     <IconButton color="primary" onClick={() => handleEdit(product)}>
                                         <EditIcon />
                                     </IconButton>
@@ -220,12 +223,12 @@ const Product = () => {
                         ))}
                 </TableBody>
             </Table>
-        </TableContainer >
+        </TableContainer>
     ), [products, page]);
 
     return (
-        <Box width="100%" py={4} px={{ xs: 2, sm: 4, md: 10 }} textAlign="right">
-            <Button variant="contained" onClick={openForm}>Add Product</Button>
+        <Box width="100%" px={{ xs: 2, sm: 4, md: 10 }} textAlign="right">
+            <Button variant="contained" onClick={openAddForm}>Add Product</Button>
 
             <Box mt={2}>{renderedProducts}</Box>
 
@@ -239,62 +242,13 @@ const Product = () => {
                 />
             </Box>
 
-            <Dialog open={formDialogOpen} onClose={() => setFormDialogOpen(false)} TransitionComponent={Grow}
-                PaperProps={{ sx: { borderRadius: 4, padding: 3 } }}>
-                <Box component="form" onSubmit={formik.handleSubmit}
-                    sx={{ backgroundColor: "#f5f5f5", borderRadius: 4, p: 4, maxWidth: 500 }}>
-                    <Typography fontWeight={700} variant="h5" mb={2} textAlign="center">
-                        {isEditing ? "Edit Product" : "Add New Product"}
-                    </Typography>
-
-                    {["name", "price", "description", "category", "clothingType", "rating", "sold", "colors", "sizes"].map((field) => (
-                        <TextField
-                            key={field}
-                            label={field.charAt(0).toUpperCase() + field.slice(1)}
-                            name={field}
-                            type={["price", "rating", "sold"].includes(field) ? "number" : "text"}
-                            fullWidth
-                            sx={{
-                                '& .MuiInputBase-input': {
-                                    height: '10px'
-                                }
-                            }}
-                            margin="normal"
-                            onChange={formik.handleChange}
-                            onBlur={formik.handleBlur}
-                            value={formik.values[field]}
-                            error={formik.touched[field] && Boolean(formik.errors[field])}
-                            helperText={formik.touched[field] && formik.errors[field]}
-                            inputProps={field === "rating" ? { step: "0.1" } : {}
-                            }
-                        />
-                    ))}
-
-                    <Box display={"flex"} flexDirection={"column"} alignItems={"center"}>
-                        <Button component="label" variant="contained" sx={{ mt: 2 }}>
-                            Upload Image
-                            <input
-                                type="file"
-                                name="image"
-                                hidden
-                                accept="image/*"
-                                onChange={handleImageChange}
-                                onBlur={formik.handleBlur}
-                            />
-                        </Button>
-                        {formik.touched.image && formik.errors.image && (
-                            <Typography color="error" sx={{ mt: 1 }}>{formik.errors.image}</Typography>
-                        )}
-
-                        <Button variant="contained" type="submit" disabled={loading} sx={{ mt: 2 }}>
-                            {loading ? <CircularProgress size={24} /> : isEditing ? "Update Product" : "Add Product"}
-                        </Button>
-                    </Box>
-
-                    {error && <Typography color="error" mt={2}>{error}</Typography>}
-                    {addProductSuccess && <Typography color="success.main" mt={2}>Product added successfully!</Typography>}
-                </Box>
-            </Dialog>
+            <ProductFormDialog
+                open={formDialogOpen}
+                onClose={() => setFormDialogOpen(false)}
+                formik={formik}
+                loading={loading}
+                mode={mode}
+            />
 
             <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)} TransitionComponent={Grow}
                 PaperProps={{ sx: { borderRadius: 4, padding: 3 } }}>
@@ -306,6 +260,14 @@ const Product = () => {
                     </Box>
                 </Box>
             </Dialog>
+            {selectedProductId && (
+                <ProductReviewDialog
+                    open={reviewDialogOpen}
+                    onClose={() => setReviewDialogOpen(false)}
+                    productId={selectedProductId}
+                />
+            )}
+
         </Box>
     );
 };

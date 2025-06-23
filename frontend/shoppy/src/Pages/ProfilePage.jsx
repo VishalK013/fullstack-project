@@ -13,6 +13,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import { updateUserProfile } from "../features/user/UserSlice";
+import { xyzURL } from "../common/util";
 
 const ProfilePage = () => {
     const dispatch = useDispatch();
@@ -118,7 +119,7 @@ const ProfilePage = () => {
 
                 <Box sx={{ position: "relative", display: "inline-block" }}>
                     <Avatar
-                        src={profilePic.startsWith("data:") ? profilePic : `http://192.168.1.1:5000${profilePic}`}
+                        src={profilePic.startsWith("data:") ? profilePic : `${xyzURL}${profilePic}`}
                         sx={{ width: 100, height: 100, cursor: "pointer" }}
                         onClick={handleAvatarClick}
                     />

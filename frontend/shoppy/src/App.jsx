@@ -6,11 +6,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-// Routes & Pages
 import HomePage from "./Pages/HomePage";
 import SignUpPage from "./Pages/SignUpPage";
+import AdminPage from "./Pages/AdminPage"
 import LoginPage from "./Pages/LoginPage";
-import AdminPage from "./Pages/AdminPage";
+import AdminOrders from "./Pages/AdminOrders"
 import Product from './Pages/Product';
 import UserList from './Pages/UserList';
 import SinglePageProduct from './Pages/SinglePageProduct';
@@ -32,6 +32,7 @@ import theme from "./Theme";
 import { checkTokenExpiration } from "./features/user/UserSlice";
 import { setOrderToReview, updateOrderStatus } from './features/order/OrderSlice';
 import socket from './Socket';
+import DashboardContent from './components/DashboardContent';
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -46,9 +47,6 @@ const AppRoutes = () => {
         <Route path='/' element={<HomePage />} />
         <Route path='/signup' element={<SignUpPage />} />
         <Route path='/login' element={<LoginPage />} />
-        <Route path='/admin' element={<ProtectedRoute allowedRoles={["admin"]}><AdminPage /></ProtectedRoute>} />
-        <Route path='/admin/product' element={<ProtectedRoute allowedRoles={['admin']}><Product /></ProtectedRoute>} />
-        <Route path='/admin/users' element={<ProtectedRoute allowedRoles={['admin']}><UserList /></ProtectedRoute>} />
         <Route path='/products' element={<ProtectedRoute allowedRoles={["user", "admin"]}><Category /></ProtectedRoute>} />
         <Route path='/products/:id' element={<ProtectedRoute allowedRoles={["user", "admin"]}><SinglePageProduct /></ProtectedRoute>} />
         <Route path='/profile' element={<ProtectedRoute allowedRoles={["user", "admin"]}><ProfilePage /></ProtectedRoute>} />
@@ -56,7 +54,18 @@ const AppRoutes = () => {
         <Route path='/wishlist' element={<ProtectedRoute allowedRoles={["user", "admin"]}><Wishlist /></ProtectedRoute>} />
         <Route path='/cart' element={<CartPage />} />
         <Route path='/unauthorized' element={<UnauthorizedPage />} />
+
+        <Route
+          path='/admin'
+          element={<ProtectedRoute allowedRoles={["admin"]}><AdminPage /></ProtectedRoute>}
+        >
+          <Route index element={<DashboardContent />} />    {/* /admin */}
+          <Route path='orders' element={<AdminOrders />} /> {/* /admin/orders */}
+          <Route path='products' element={<Product />} />    {/* /admin/products */}
+          <Route path='users' element={<UserList />} />      {/* /admin/users */}
+        </Route>
       </Routes>
+
       {!hideNavbar && <Footer />}
     </>
   );

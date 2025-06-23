@@ -8,6 +8,7 @@ import {
     Rating,
     Box,
     Button,
+    Tooltip,
 } from "@mui/material";
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -15,6 +16,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { addToCart } from '../features/carts/CartSlice';
 import WishListButton from './WishListButton';
 import { fetchWishList } from '../features/wishlist/WishListSlice';
+import { xyzURL } from '../common/util';
+import { isAuthenticated } from '../api/Api';
 
 function ProductList({
     fetchAction,
@@ -34,7 +37,9 @@ function ProductList({
 
     useEffect(() => {
         dispatch(fetchAction({ page: 1, limit }));
-        dispatch(fetchWishList());
+        if (isAuthenticated()) {
+            dispatch(fetchWishList());
+        }
     }, [dispatch, fetchAction, limit]);
 
     if (status === 'loading') return <p>{loadingText}</p>;
@@ -42,17 +47,15 @@ function ProductList({
 
     const handleAddToCart = (product) => {
         dispatch(addToCart({ productId: product._id, quantity: 1 }));
-        toast.success("Product added to cart!", { autoClose: 500 });
+        toast.success("Product added to cart!", { autoClose: 700, hideProgressBar: true });
     };
 
     const handleViewAll = () => {
         if (limit < MAX_LIMIT) {
             setLimit(prev => Math.min(prev + 4, MAX_LIMIT));
         } else {
-            toast.info("Redirecting to all products...");
-            setTimeout(() => {
-                navigate("/products");
-            }, 2000);
+            toast.info("Redirecting to all products...", { autoClose: 700, hideProgressBar: true });
+            navigate("/products");
         }
     };
 
@@ -64,25 +67,51 @@ function ProductList({
             <Grid container spacing={3} justifyContent={"center"}>
                 {products.map((product) => (
                     <Grid item key={product._id}>
-                        <Card sx={{ height: '100%', width: "300px", boxShadow: 'none', border: 'none', textAlign: "center", position: "relative" }}>
+                        <Card
+                            sx={{
+                                height: '100%',
+                                width: "300px",
+                                boxShadow: 'none',
+                                border: 'none',
+                                textAlign: "center",
+                                position: "relative",
+                                overflow: "visible"
+                            }}
+                        >
                             <CardMedia
                                 component="img"
                                 height="300"
-                                width="100%"
-                                loading="lazy"
-                                image={`http://localhost:5000${product.image}`}
+                                position="relative"
+                                image={`${xyzURL}${product.image}`}
                                 alt={product.name}
-                                sx={{ borderRadius: 5 }}
+                                sx={{ borderRadius: 5, cursor: "pointer" }}
+                                onClick={() => navigate(`/products/${product._id}`)}
                             />
-                            <WishListButton productId={product._id} iconSize="small" absolutePosition={true} />
+
+                            <Tooltip title="Add to Wishlist">
+                                <span 
+                                    style={{
+                                        position:"absolute",
+                                        top:"0px",
+                                        right:"0px"
+                                    }}
+                                >
+                                    <WishListButton
+                                        productId={product._id}
+                                        iconSize="small"
+                                        cursor="pointer"
+                                    />
+                                </span>
+                            </Tooltip>
+
                             <CardContent>
                                 <Typography variant="h6" component="div" gutterBottom>
                                     {product.name}
                                 </Typography>
                                 <Box display="flex" alignItems="center" justifyContent={"center"} gap={1}>
-                                    <Rating value={product.rating} readOnly precision={0.5} size="medium" />
+                                    <Rating value={Number(product.rating) || 0} readOnly precision={0.5} size="medium" />
                                     <Typography variant="body2" color="text.secondary">
-                                        {product.rating}/5
+                                        ({product.numReviews || 0} review{product.numReviews === 1 ? '' : 's'})
                                     </Typography>
                                 </Box>
                                 <Typography variant="body2" color="black" fontWeight={700} mt={1} fontSize={22} gutterBottom>
